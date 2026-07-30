@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.2.0](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/compare/v2.1.0...v2.2.0) (2026-07-30)
+
+
+### Features
+
+* show saved form locations ([641196f](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/commit/641196fed9ca7f39e43321114d63cdccc6e113b8))
+
+
+### Miscellaneous Chores
+
+* **deps:** update WPCS security patch ([e0057d1](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/commit/e0057d1494d3542b417ebbdd9f4718249e5dc124))
+
 ## [2.1.0](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/compare/v2.0.0...v2.1.0) (2026-07-20)
 
 
