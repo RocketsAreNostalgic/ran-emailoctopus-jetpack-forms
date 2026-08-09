@@ -33,7 +33,7 @@ jobs:
                   php-version: '8.3'
                   coverage: none
                   extensions: zip
-                  tools: composer:v2
+                  tools: composer:v2, wp-cli
 
             - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
               with:
@@ -56,6 +56,7 @@ jobs:
                   find includes -name '*.php' -print0 | xargs -0 -n 1 php -l
                   php -l ran-emailoctopus-jetpack-forms.php
                   composer run phpcs
+                  grep -Fq 'tools: composer:v2, wp-cli' .github/workflows/quality.yml
                   grep -Fq "github.event_name == 'pull_request'" .github/workflows/quality.yml
                   # These single-quoted patterns are literal workflow contracts.
                   # shellcheck disable=SC2016
