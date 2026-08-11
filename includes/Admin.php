@@ -99,8 +99,8 @@ final class Admin {
 			'strapline'        => __( 'Connect selected Jetpack forms to EmailOctopus without replacing Jetpack’s form workflow.', 'ran-emailoctopus-jetpack-forms' ),
 			'logo'             => array(
 				'url'    => RAN_EMAILOCTOPUS_JETPACK_FORMS_PLUGIN_URL . 'assets/ran-emailoctopus-mark.svg',
-				'width'  => 64,
-				'height' => 64,
+				'width'  => 54,
+				'height' => 54,
 			),
 			'navigation_label' => __( 'RAN EmailOctopus', 'ran-emailoctopus-jetpack-forms' ),
 			'navigation'       => array(
@@ -155,9 +155,14 @@ final class Admin {
 			<section class="ran-emailoctopus-overview__panel" aria-labelledby="ran-emailoctopus-overview-title">
 				<header class="ran-emailoctopus-overview__header">
 					<div class="ran-emailoctopus-overview__brands" aria-hidden="true">
-						<span class="ran-emailoctopus-overview__product-mark"><img src="<?php echo esc_url( RAN_EMAILOCTOPUS_JETPACK_FORMS_PLUGIN_URL . 'assets/ran-emailoctopus-mark.svg' ); ?>" width="64" height="64" alt="" /></span>
-						<span class="ran-emailoctopus-overview__plus">+</span>
-						<span class="ran-emailoctopus-overview__jetpack-name"><?php esc_html_e( 'Jetpack Forms', 'ran-emailoctopus-jetpack-forms' ); ?></span>
+						<span class="ran-emailoctopus-overview__emailoctopus-brand">
+							<img class="ran-emailoctopus-overview__emailoctopus-logo" src="<?php echo esc_url( RAN_EMAILOCTOPUS_JETPACK_FORMS_PLUGIN_URL . 'assets/emailoctopus-logo.svg' ); ?>" width="42" height="54" alt="" />
+							<span class="ran-emailoctopus-overview__emailoctopus-name"><?php esc_html_e( 'EmailOctopus', 'ran-emailoctopus-jetpack-forms' ); ?></span>
+						</span>
+						<span class="ran-emailoctopus-overview__jetpack-brand">
+							<span class="ran-emailoctopus-overview__plus">+</span>
+							<img class="ran-emailoctopus-overview__jetpack-logo" src="<?php echo esc_url( RAN_EMAILOCTOPUS_JETPACK_FORMS_PLUGIN_URL . 'assets/jetpack-logo.svg' ); ?>" width="140" height="38" alt="" />
+						</span>
 					</div>
 					<h2 id="ran-emailoctopus-overview-title"><?php esc_html_e( 'EmailOctopus subscriptions for Jetpack Forms', 'ran-emailoctopus-jetpack-forms' ); ?></h2>
 				</header>

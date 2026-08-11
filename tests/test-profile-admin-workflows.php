@@ -290,8 +290,9 @@ class RAN_EmailOctopus_Jetpack_Forms_Profile_Admin_Workflows_Test extends WP_Uni
 		$this->assertSame( 1, substr_count( $markup, '<h1 ' ) );
 		$this->assertSame( 1, substr_count( $markup, 'aria-current="page"' ) );
 		$this->assertStringContainsString( 'EmailOctopus subscriptions for Jetpack Forms', $markup );
-		$this->assertStringContainsString( 'assets/ran-emailoctopus-mark.svg', $markup );
-		$this->assertStringContainsString( 'Jetpack Forms', $markup );
+		$this->assertStringContainsString( 'assets/emailoctopus-logo.svg', $markup );
+		$this->assertStringContainsString( 'assets/jetpack-logo.svg', $markup );
+		$this->assertStringContainsString( '>EmailOctopus</span>', $markup );
 		$this->assertStringContainsString( 'https://jetpack.com/forms/', $markup );
 		$this->assertStringContainsString( 'https://help.emailoctopus.com/article/92-integrating-with-wordpress', $markup );
 		$this->assertStringContainsString( 'https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/issues', $markup );

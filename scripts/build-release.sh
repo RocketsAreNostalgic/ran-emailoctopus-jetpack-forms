@@ -54,7 +54,10 @@ unzip -Z1 "$archive" | grep -qx "$slug/ran-emailoctopus-jetpack-forms.php"
 
 for shell_path in \
 	"$slug/assets/admin.css" \
+	"$slug/assets/emailoctopus-logo.svg" \
+	"$slug/assets/jetpack-logo.svg" \
 	"$slug/assets/ran-admin-shell.css" \
+	"$slug/assets/ran-emailoctopus-mark.svg" \
 	"$slug/includes/generated/ran-admin-shell.php" \
 	"$slug/includes/generated/ran-admin-shell.provenance.json"
 do
