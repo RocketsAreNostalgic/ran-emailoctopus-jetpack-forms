@@ -1,0 +1,133 @@
+.ran-emailoctopus-jetpack-forms-admin .ran-profile-panel {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	margin: 20px 0;
+	max-width: 1000px;
+	padding: 20px;
+}
+
+.ran-emailoctopus-jetpack-forms-admin fieldset {
+	margin: 0 0 24px;
+}
+
+.ran-emailoctopus-jetpack-forms-admin legend {
+	font-size: 14px;
+	font-weight: 600;
+	margin-bottom: 8px;
+}
+
+.ran-emailoctopus-jetpack-forms-admin .ran-form-choice {
+	display: block;
+	margin: 8px 0;
+}
+
+.ran-emailoctopus-jetpack-forms-admin .ran-form-locations {
+	list-style: disc;
+	margin: 4px 0 8px 28px;
+}
+
+.ran-emailoctopus-jetpack-forms-admin .ran-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.ran-emailoctopus-jetpack-forms-admin .ran-health-pass {
+	color: #008a20;
+}
+
+.ran-emailoctopus-jetpack-forms-admin .ran-health-error {
+	color: #b32d2e;
+}
+
+.ran-emailoctopus-jetpack-forms-admin .ran-health-warning {
+	color: #996800;
+}
+
+.ran-emailoctopus-jetpack-forms-admin .ran-health-skipped {
+	color: #646970;
+}
+
+.ran-emailoctopus-overview {
+	display: grid;
+	gap: 20px;
+	max-width: 960px;
+}
+
+.ran-emailoctopus-overview__panel {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+	padding: 24px;
+}
+
+.ran-emailoctopus-overview__panel > :first-child,
+.ran-emailoctopus-overview__header h2,
+.ran-emailoctopus-overview__resource-group h3 {
+	margin-top: 0;
+}
+
+.ran-emailoctopus-overview__panel > :last-child,
+.ran-emailoctopus-overview__resource-group ul {
+	margin-bottom: 0;
+}
+
+.ran-emailoctopus-overview__brands {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+	margin-bottom: 20px;
+}
+
+.ran-emailoctopus-overview__product-mark {
+	align-items: center;
+	background: #243b67;
+	border-radius: 50%;
+	display: flex;
+	height: 64px;
+	justify-content: center;
+	width: 64px;
+}
+
+.ran-emailoctopus-overview__product-mark img {
+	display: block;
+	height: 52px;
+	width: 52px;
+}
+
+.ran-emailoctopus-overview__jetpack-name {
+	color: #1d2327;
+	font-size: 20px;
+	font-weight: 600;
+}
+
+.ran-emailoctopus-overview__plus {
+	color: #646970;
+	font-size: 24px;
+	font-weight: 600;
+	line-height: 1;
+}
+
+.ran-emailoctopus-overview__resources {
+	display: grid;
+	gap: 16px;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.ran-emailoctopus-overview__resource-group {
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	padding: 18px;
+}
+
+.ran-emailoctopus-overview__resource-group ul {
+	display: grid;
+	gap: 10px;
+	list-style: disc;
+	padding-inline-start: 20px;
+}
+
+.ran-emailoctopus-overview__resource-group li {
+	margin: 0;
+}

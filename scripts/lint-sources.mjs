@@ -8,6 +8,7 @@ const type = process.argv[2];
 const extension = 'js' === type ? '.js' : '.css';
 const command = 'win32' === process.platform ? 'wp-scripts.cmd' : 'wp-scripts';
 const directoriesToIgnore = new Set(['.git', 'dist', 'node_modules', 'vendor']);
+const filesToIgnore = new Set([resolve(root, 'assets/ran-admin-shell.css')]);
 
 function collectFiles(directory) {
 	return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -19,7 +20,11 @@ function collectFiles(directory) {
 				: collectFiles(path);
 		}
 
-		return entry.isFile() && entry.name.endsWith(extension) ? [path] : [];
+		return entry.isFile() &&
+			entry.name.endsWith(extension) &&
+			!filesToIgnore.has(path)
+			? [path]
+			: [];
 	});
 }
 

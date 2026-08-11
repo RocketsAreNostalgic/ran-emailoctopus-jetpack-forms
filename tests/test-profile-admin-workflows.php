@@ -21,6 +21,10 @@ class RAN_EmailOctopus_Jetpack_Forms_Profile_Admin_Workflows_Test extends WP_Uni
 	/** Reset settings, request and user state. */
 	public function set_up() {
 		parent::set_up();
+		wp_dequeue_style( Admin::SHELL_STYLE_HANDLE );
+		wp_deregister_style( Admin::SHELL_STYLE_HANDLE );
+		wp_dequeue_style( Admin::ADMIN_STYLE_HANDLE );
+		wp_deregister_style( Admin::ADMIN_STYLE_HANDLE );
 		delete_option( Settings::OPTION_NAME );
 		delete_option( Settings::LOCK_OPTION_NAME );
 		delete_option( 'emailoctopus_api_key' );
@@ -36,6 +40,10 @@ class RAN_EmailOctopus_Jetpack_Forms_Profile_Admin_Workflows_Test extends WP_Uni
 
 	/** Reset globals and filters. */
 	public function tear_down() {
+		wp_dequeue_style( Admin::SHELL_STYLE_HANDLE );
+		wp_deregister_style( Admin::SHELL_STYLE_HANDLE );
+		wp_dequeue_style( Admin::ADMIN_STYLE_HANDLE );
+		wp_deregister_style( Admin::ADMIN_STYLE_HANDLE );
 		remove_filter( 'wp_redirect', array( $this, 'capture_redirect' ) );
 		Settings::set_uuid_factory();
 		$_GET     = array();
@@ -218,6 +226,108 @@ class RAN_EmailOctopus_Jetpack_Forms_Profile_Admin_Workflows_Test extends WP_Uni
 		$this->assertStringContainsString( 'Index profile', $markup );
 		$this->assertStringContainsString( 'admin-post.php', $markup );
 		$this->assertStringNotContainsString( 'action="options.php"', $markup );
+	}
+
+	/** Every existing server-routed view remains inside the Settings shell tab. */
+	public function test_settings_views_render_one_shared_shell_heading() {
+		$profile_id = $this->create_profile( 'Shell profile', array() );
+		$views      = array(
+			array(),
+			array( 'view' => 'create' ),
+			array(
+				'view'       => 'edit',
+				'profile_id' => $profile_id,
+			),
+			array(
+				'view'       => 'delete',
+				'profile_id' => $profile_id,
+			),
+			array(
+				'view'       => 'health',
+				'profile_id' => $profile_id,
+			),
+		);
+
+		foreach ( $views as $view ) {
+			$_GET = array_merge( array( 'page' => Admin::PAGE_SLUG ), $view );
+			ob_start();
+			Admin::render_page();
+			$markup = (string) ob_get_clean();
+
+			$this->assertSame( 1, substr_count( $markup, '<h1 ' ) );
+			$this->assertSame( 1, substr_count( $markup, 'aria-current="page"' ) );
+			$this->assertStringContainsString( 'RAN EmailOctopus for Jetpack Forms', $markup );
+			$this->assertStringContainsString( 'Connect selected Jetpack forms to EmailOctopus', $markup );
+			$this->assertStringContainsString( 'assets/ran-emailoctopus-mark.svg', $markup );
+			$this->assertStringContainsString( '>Settings</a>', $markup );
+			$this->assertStringContainsString( '>Overview</a>', $markup );
+			$this->assertStringNotContainsString( 'ran-admin-shell__background', $markup );
+			$this->assertStringNotContainsString( 'ran-admin-shell__actions', $markup );
+			$this->assertStringNotContainsString( '<style>', $markup );
+			$this->assertLessThan( strpos( $markup, '<div class="wrap' ), strpos( $markup, 'class="ran-admin-shell' ) );
+		}
+	}
+
+	/** Overview is local, read-only and owns product documentation links. */
+	public function test_overview_tab_is_local_and_omits_profile_controls() {
+		$request_count = 0;
+		$http_mock     = static function () use ( &$request_count ) {
+			++$request_count;
+			return new WP_Error( 'unexpected', 'The overview must not call HTTP.' );
+		};
+		add_filter( 'pre_http_request', $http_mock );
+		$_GET = array(
+			'page' => Admin::PAGE_SLUG,
+			'tab'  => 'overview',
+		);
+
+		ob_start();
+		Admin::render_page();
+		$markup = (string) ob_get_clean();
+		remove_filter( 'pre_http_request', $http_mock );
+
+		$this->assertSame( 0, $request_count );
+		$this->assertSame( 1, substr_count( $markup, '<h1 ' ) );
+		$this->assertSame( 1, substr_count( $markup, 'aria-current="page"' ) );
+		$this->assertStringContainsString( 'EmailOctopus subscriptions for Jetpack Forms', $markup );
+		$this->assertStringContainsString( 'assets/ran-emailoctopus-mark.svg', $markup );
+		$this->assertStringContainsString( 'Jetpack Forms', $markup );
+		$this->assertStringContainsString( 'https://jetpack.com/forms/', $markup );
+		$this->assertStringContainsString( 'https://help.emailoctopus.com/article/92-integrating-with-wordpress', $markup );
+		$this->assertStringContainsString( 'https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/issues', $markup );
+		$this->assertStringNotContainsString( 'ran_emailoctopus_jetpack_forms_create_profile', $markup );
+		$this->assertStringNotContainsString( 'ran_emailoctopus_jetpack_forms_run_health_check', $markup );
+	}
+
+	/** Shell and consumer CSS enqueue together only on the exact plugin screen. */
+	public function test_admin_styles_enqueue_only_on_exact_settings_screen() {
+		Admin::enqueue_assets( 'dashboard' );
+		$this->assertFalse( wp_style_is( Admin::SHELL_STYLE_HANDLE, 'enqueued' ) );
+		$this->assertFalse( wp_style_is( Admin::ADMIN_STYLE_HANDLE, 'enqueued' ) );
+
+		Admin::enqueue_assets( 'settings_page_' . Admin::PAGE_SLUG );
+		$this->assertTrue( wp_style_is( Admin::SHELL_STYLE_HANDLE, 'enqueued' ) );
+		$this->assertTrue( wp_style_is( Admin::ADMIN_STYLE_HANDLE, 'enqueued' ) );
+
+		$styles = wp_styles();
+		$this->assertSame( array( Admin::SHELL_STYLE_HANDLE ), $styles->registered[ Admin::ADMIN_STYLE_HANDLE ]->deps );
+	}
+
+	/** Unknown tabs normalize to Settings without changing view routing. */
+	public function test_unknown_tab_falls_back_to_settings() {
+		$_GET = array(
+			'page' => Admin::PAGE_SLUG,
+			'tab'  => 'unknown',
+			'view' => 'create',
+		);
+
+		ob_start();
+		Admin::render_page();
+		$markup = (string) ob_get_clean();
+
+		$this->assertStringContainsString( 'Create integration profile', $markup );
+		$this->assertStringNotContainsString( 'EmailOctopus subscriptions for Jetpack Forms', $markup );
+		$this->assertSame( 1, substr_count( $markup, 'aria-current="page"' ) );
 	}
 
 	/** Create and edit views provide a route back to the integrations index. */
