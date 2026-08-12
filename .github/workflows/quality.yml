@@ -88,10 +88,14 @@ jobs:
                       release_candidate=true
                   fi
 
+                  # TEMPORARY: Only PHP 8.5 uses GitHub-hosted Ubuntu because the
+                  # equivalent setup-php 8.5 step repeatedly stalled in Turnstile
+                  # Blacksmith run 31581704112, attempts 1 and 2.
+                  # TODO: Restore PHP 8.5 to Blacksmith after provider/upstream resolution.
                   if [[ "$release_candidate" == true ]]; then
-                      matrix='{"include":[{"php":"8.3","wordpress":"latest","jetpack":"latest"}]}'
+                      matrix='{"include":[{"php":"8.5","wordpress":"latest","jetpack":"latest","runner":"ubuntu-24.04"}]}'
                   else
-                      matrix='{"include":[{"php":"8.0","wordpress":"6.8","jetpack":"15.5"},{"php":"8.3","wordpress":"latest","jetpack":"latest"}]}'
+                      matrix='{"include":[{"php":"8.0","wordpress":"6.8","jetpack":"15.5","runner":"blacksmith-2vcpu-ubuntu-2404"},{"php":"8.5","wordpress":"latest","jetpack":"latest","runner":"ubuntu-24.04"}]}'
                   fi
 
                   {
@@ -114,7 +118,7 @@ jobs:
     compatibility:
         name: PHP ${{ matrix.php }} / WordPress ${{ matrix.wordpress }} / Jetpack ${{ matrix.jetpack }}
         needs: quality
-        runs-on: blacksmith-2vcpu-ubuntu-2404
+        runs-on: ${{ matrix.runner }}
         services:
             mysql:
                 image: mysql:8.0
