@@ -270,8 +270,12 @@ class RAN_EmailOctopus_Jetpack_Forms_Profile_Admin_Workflows_Test extends WP_Uni
 			$this->assertStringContainsString( 'assets/ran-emailoctopus-mark.svg', $markup );
 			$this->assertStringContainsString( '>Settings</a>', $markup );
 			$this->assertStringContainsString( '>Overview</a>', $markup );
-			$this->assertLessThan( strpos( $markup, '>Settings</a>' ), strpos( $markup, '>Overview</a>' ) );
-			$this->assertStringContainsString( 'Copyright &copy; ' . wp_date( 'Y' ), $markup );
+			$overview_position = strpos( $markup, '>Overview</a>' );
+			$settings_position = strpos( $markup, '>Settings</a>' );
+			$this->assertNotFalse( $overview_position );
+			$this->assertNotFalse( $settings_position );
+			$this->assertLessThan( $settings_position, $overview_position );
+			$this->assertStringContainsString( 'Copyright © ' . wp_date( 'Y' ), $markup );
 			$this->assertStringContainsString( 'href="https://github.com/RocketsAreNostalgic"', $markup );
 			$this->assertStringContainsString( '>Rockets Are Nostalgic</a>', $markup );
 			$this->assertStringNotContainsString( 'ran-admin-shell__background', $markup );
@@ -314,7 +318,7 @@ class RAN_EmailOctopus_Jetpack_Forms_Profile_Admin_Workflows_Test extends WP_Uni
 	public function test_plugin_list_settings_action_opens_settings_tab() {
 		$links = Admin::plugin_action_links( array() );
 
-		$this->assertSame( 1, count( $links ) );
+		$this->assertCount( 1, $links );
 		$this->assertStringContainsString( 'tab=settings', $links[0] );
 		$this->assertStringContainsString( '>Settings</a>', $links[0] );
 	}
@@ -348,6 +352,65 @@ class RAN_EmailOctopus_Jetpack_Forms_Profile_Admin_Workflows_Test extends WP_Uni
 		$this->assertStringNotContainsString( 'Create integration profile', $markup );
 		$this->assertStringContainsString( 'EmailOctopus subscriptions for Jetpack Forms', $markup );
 		$this->assertSame( 1, substr_count( $markup, 'aria-current="page"' ) );
+	}
+
+	/** Legacy server-side settings views remain routable when their tab parameter is absent. */
+	public function test_legacy_settings_views_without_tab_remain_in_settings() {
+		$profile_id = $this->create_profile( 'Legacy route profile', array() );
+		$views      = array(
+			array( 'view' => 'create' ),
+			array(
+				'view'       => 'edit',
+				'profile_id' => $profile_id,
+			),
+			array(
+				'view'       => 'delete',
+				'profile_id' => $profile_id,
+			),
+			array(
+				'view'       => 'health',
+				'profile_id' => $profile_id,
+			),
+		);
+
+		foreach ( $views as $view ) {
+			$_GET = array_merge( array( 'page' => Admin::PAGE_SLUG ), $view );
+			ob_start();
+			Admin::render_page();
+			$markup = (string) ob_get_clean();
+
+			$this->assertStringNotContainsString( 'EmailOctopus subscriptions for Jetpack Forms', $markup );
+			$this->assertStringContainsString( 'aria-current="page">Settings</a>', $markup );
+		}
+	}
+
+	/** A missing tab only maps recognized legacy settings views away from Overview. */
+	public function test_bare_and_unknown_views_without_tab_land_on_overview() {
+		foreach ( array( array(), array( 'view' => 'unknown' ) ) as $view ) {
+			$_GET = array_merge( array( 'page' => Admin::PAGE_SLUG ), $view );
+			ob_start();
+			Admin::render_page();
+			$markup = (string) ob_get_clean();
+
+			$this->assertStringContainsString( 'EmailOctopus subscriptions for Jetpack Forms', $markup );
+			$this->assertStringContainsString( 'aria-current="page">Overview</a>', $markup );
+		}
+	}
+
+	/** An explicit Overview tab remains the landing page even with a legacy settings view. */
+	public function test_explicit_overview_tab_overrides_legacy_settings_view() {
+		$_GET = array(
+			'page' => Admin::PAGE_SLUG,
+			'tab'  => 'overview',
+			'view' => 'create',
+		);
+		ob_start();
+		Admin::render_page();
+		$markup = (string) ob_get_clean();
+
+		$this->assertStringContainsString( 'EmailOctopus subscriptions for Jetpack Forms', $markup );
+		$this->assertStringContainsString( 'aria-current="page">Overview</a>', $markup );
+		$this->assertStringNotContainsString( 'Create integration profile', $markup );
 	}
 
 	/** Create and edit views provide a route back to the integrations index. */

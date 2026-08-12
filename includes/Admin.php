@@ -89,8 +89,8 @@ final class Admin {
 	public static function render_page() {
 		self::require_capability();
 
-		$active_tab        = self::get_active_tab();
 		$view              = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( $_GET['view'] ) ) : 'index'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin view routing.
+		$active_tab        = self::get_active_tab( $view );
 		$profile_id        = self::request_profile_id( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin view routing.
 		$overview_url      = self::page_url( array( 'tab' => 'overview' ) );
 		$settings_url      = self::page_url( array( 'tab' => 'settings' ) );
@@ -151,7 +151,10 @@ final class Admin {
 			<hr>
 			<div class="ran-emailoctopus-jetpack-forms-footer">
 				<p>
-					Copyright &copy; <?php echo esc_html( wp_date( 'Y' ) ); ?>
+					<?php
+					/* translators: %s: current year. */
+					echo esc_html( sprintf( __( 'Copyright © %s', 'ran-emailoctopus-jetpack-forms' ), wp_date( 'Y' ) ) );
+					?>
 					<?php if ( '' !== $plugin_author && '' !== $plugin_author_url ) : ?>
 						<a href="<?php echo esc_url( $plugin_author_url ); ?>"><?php echo esc_html( $plugin_author ); ?></a>
 					<?php else : ?>
@@ -163,9 +166,13 @@ final class Admin {
 		<?php
 	}
 
-	/** Return the selected shell tab, defaulting invalid input to Overview. */
-	private static function get_active_tab() {
-		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'overview'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only view selection.
+	/** Return the selected shell tab, retaining recognized legacy settings routes. */
+	private static function get_active_tab( $view ) {
+		if ( ! isset( $_GET['tab'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only view selection.
+			return in_array( $view, array( 'create', 'edit', 'delete', 'health' ), true ) ? 'settings' : 'overview';
+		}
+
+		$tab = sanitize_key( wp_unslash( $_GET['tab'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only view selection.
 
 		return 'settings' === $tab ? 'settings' : 'overview';
 	}
