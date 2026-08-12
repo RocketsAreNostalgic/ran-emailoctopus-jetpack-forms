@@ -4,3 +4,6 @@ vendor/
 .codex/
 *.min.css
 CHANGELOG.md
+assets/ran-admin-shell.css
+includes/generated/ran-admin-shell.php
+includes/generated/ran-admin-shell.provenance.json

@@ -6,8 +6,8 @@
  * x-release-please-start-version
  * Version: 2.2.0
  * x-release-please-end
- * Author: bnjmnrsh
- * Author URI: https://github.com/RocketsAreNostalgic/
+ * Author: Rockets Are Nostalgic
+ * Author URI: https://github.com/RocketsAreNostalgic
  * Text Domain: ran-emailoctopus-jetpack-forms
  * Domain Path: /languages
  * Requires at least: 6.8
@@ -28,6 +28,7 @@ define( 'RAN_EMAILOCTOPUS_JETPACK_FORMS_VERSION', '2.2.0' );
 // x-release-please-end
 define( 'RAN_EMAILOCTOPUS_JETPACK_FORMS_PLUGIN_FILE', __FILE__ );
 define( 'RAN_EMAILOCTOPUS_JETPACK_FORMS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'RAN_EMAILOCTOPUS_JETPACK_FORMS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 require_once RAN_EMAILOCTOPUS_JETPACK_FORMS_PLUGIN_DIR . 'includes/OptionMutex.php';
 require_once RAN_EMAILOCTOPUS_JETPACK_FORMS_PLUGIN_DIR . 'includes/Settings.php';

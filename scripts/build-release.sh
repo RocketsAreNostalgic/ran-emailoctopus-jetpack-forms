@@ -22,6 +22,7 @@ fi
 mkdir -p "$output_directory" "$stage/$slug"
 cd "$root"
 
+composer admin-shell:check
 pnpm check
 find includes -name '*.php' -print0 | xargs -0 -n 1 php -l
 php -l ran-emailoctopus-jetpack-forms.php
@@ -50,4 +51,25 @@ find "$stage/$slug" -exec touch -t 200001010000 {} +
 
 unzip -t "$archive" >/dev/null
 unzip -Z1 "$archive" | grep -qx "$slug/ran-emailoctopus-jetpack-forms.php"
+
+for shell_path in \
+	"$slug/assets/admin.css" \
+	"$slug/assets/emailoctopus-logo.svg" \
+	"$slug/assets/jetpack-logo.svg" \
+	"$slug/assets/ran-admin-shell.css" \
+	"$slug/assets/ran-emailoctopus-mark.svg" \
+	"$slug/includes/generated/ran-admin-shell.php" \
+	"$slug/includes/generated/ran-admin-shell.provenance.json"
+do
+	if ! unzip -Z1 "$archive" | grep -qx "$shell_path"; then
+		echo "Release archive is missing synchronized admin-shell resource: $shell_path" >&2
+		exit 1
+	fi
+done
+
+if unzip -Z1 "$archive" | grep -Eq "^$slug/(vendor|ran-admin-shell.json)(/|$)"; then
+	echo 'Development-only admin-shell package files leaked into the release archive.' >&2
+	exit 1
+fi
+
 echo "Created and validated $archive"

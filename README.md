@@ -1,95 +1,95 @@
 # RAN EmailOctopus for Jetpack Forms
 
-RAN EmailOctopus for Jetpack Forms adds independent EmailOctopus integration
-profiles to saved [Jetpack Forms](https://jetpack.com/support/jetpack-forms/).
-Each profile owns one or more compatible forms and defines its own EmailOctopus
-destination, field mappings, success page, and visitor messages. A saved form
-keeps its profile wherever it is reused: pages, posts, patterns, and other
-singular routes can all reference it. No theme, route, page slug, or hard-coded
-provider credential is assumed.
+RAN EmailOctopus for Jetpack Forms connects selected saved Jetpack Forms to
+EmailOctopus.
+
+It exists to keep newsletter subscription routing separate from form delivery
+and visitor verification. It is designed as a companion to RAN Turnstile for
+Jetpack Forms, but either plugin can be used independently.
+
+This plugin handles opt-in subscription behaviour. Jetpack remains responsible
+for the form, notifications and feedback storage. RAN Turnstile can protect the
+same forms without taking over their EmailOctopus configuration.
+
+## What it does
+
+- Groups selected saved Jetpack forms into independent integration profiles.
+- Connects each profile to an EmailOctopus list or form.
+- Maps compatible Jetpack fields to EmailOctopus fields.
+- Sends only opted-in submissions to EmailOctopus.
+- Redirects successful submissions to a configured success page.
+- Displays profile-specific subscription results and visitor messages.
+- Provides profile health checks without affecting unrelated integrations.
+
+Unassigned forms continue through Jetpack without EmailOctopus subscription
+behaviour. A saved form can belong to only one integration profile.
 
 ## Requirements
 
 - WordPress 6.8 or later.
 - PHP 8.0 or later.
-- Jetpack, which supplies saved contact forms and authoritative saved-form
-  identity for submitted feedback.
+- Jetpack with saved Jetpack Forms.
+- An EmailOctopus account when subscriptions are enabled.
 
-EmailOctopus is optional. Until an administrator configures it, no
-EmailOctopus request is made.
+The plugin reads the API key configured by the official EmailOctopus WordPress
+plugin. It does not provide a second credential field.
 
-## Installation and use
+## Setup
 
-1. Install and activate Jetpack, then activate RAN EmailOctopus for Jetpack
-   Forms.
-2. Configure the EmailOctopus API key in the official EmailOctopus WordPress
-   plugin. This plugin reads that plugin's `emailoctopus_api_key` setting and
-   does not provide a separate API-key field.
-3. Create or choose compatible published saved Jetpack forms. The supplied
-   **Contact Newsletter Form** pattern in the **RAN Forms** category is a suitable
-   starting point.
-4. In **Settings > RAN EmailOctopus**, create an integration profile. First save
-   its label, saved-form assignments, and optional EmailOctopus destination.
-5. After the field choices refresh, configure the profile's email and consent
-   sources, custom mappings, success page, and outcome messages.
-6. Reuse an assigned saved form on any route that should use its profile. A
-   saved form can belong to only one profile.
-7. Configure the client's preferred recipients using Jetpack's native **Form
-   notifications** settings on the saved form. This plugin does not send the
-   notification email or replace WordPress mail handling.
-8. Select an EmailOctopus destination only if opted-in subscribers should be
-   sent to it.
-9. Add `[ran_emailoctopus_jetpack_forms_subscription_message]` in a Shortcode
-   block on each profile's success page. The one-time result identifies its
-   profile and displays that profile's confirmation, subscription,
-   existing-email, or problem message. A result presented on another page stays
-   inert and is not consumed.
+1. Install and activate Jetpack.
+2. Install and activate the official EmailOctopus WordPress plugin, then connect
+   it to the required EmailOctopus account.
+3. Install and activate RAN EmailOctopus for Jetpack Forms.
+4. Create or choose compatible published saved Jetpack forms.
+5. Open **Settings > RAN EmailOctopus for Jetpack Forms**.
+6. Create an integration profile and assign its saved forms.
+7. Select an EmailOctopus destination and save the profile.
+8. Configure the email and consent sources, field mappings, success page and
+   visitor messages.
+9. Add `[ran_emailoctopus_jetpack_forms_subscription_message]` to the configured
+   success page in a Shortcode block.
+10. Run the profile health check and test an opted-in submission.
 
-Assigned saved forms are the integration boundaries. Redirects, opt-in
-subscriptions, normal-post handling, and source-field discovery follow each
-form across routes. Unassigned forms, including another form on the same page,
-remain under Jetpack's normal behaviour. Several forms in one profile share
-that profile's behaviour; forms needing different behaviour belong to separate
-profiles.
+Jetpack's native **Form notifications** settings continue to control email
+recipients. This plugin does not replace WordPress mail handling.
 
-### Conflict-safe editing
+## Success pages and the shared shortcode
 
-The administration interface saves one profile section at a time. The identity
-and assignment step never submits mappings or messages, and the behaviour step
-never submits ownership or destination fields. A short database write lock
-serializes exact simultaneous changes. If another tab has already changed the
-same profile, the stale save is rejected without overwriting the newer values;
-the submitted values remain available for review and retry.
+The plugin registers one canonical success-page shortcode, shared by every
+integration profile:
 
-### Saved-form routing requirements
+`[ran_emailoctopus_jetpack_forms_subscription_message]`
 
-EmailOctopus routing runs only when Jetpack provides an authoritative saved-form
-identity for submitted feedback and each active target is a published,
-structurally valid `jetpack_form` uniquely owned by one profile. There is no
-page-scoped fallback. One broken profile or form does not stop unrelated valid
-profiles; the integrations index and profile health check identify what needs
-attention.
+The shortcode is not unique to a form or profile and does not need a form or
+profile attribute. Add the same shortcode to every page selected as a profile's
+success page.
 
-An unavailable, deleted, draft, wrong-type, structurally invalid, or
-mapping-incompatible form cannot receive EmailOctopus side effects. Jetpack's
-native notification and feedback handling continues, while the health check
-explains how to repair each target. Every configured source must exist
-unambiguously and compatibly on a form before that form can subscribe a visitor.
+- One profile may own one or more saved Jetpack forms. Those forms share that
+  profile's success page and visitor messages.
+- Forms that need different success pages or messages must use separate
+  profiles.
+- Separate profiles may use different success pages or share one success page.
+  A one-time result token selects the correct profile and message after each
+  submission.
 
-### Version 2 clean break
+Without a valid result token, or when viewed on a page other than the resolved
+profile's success page, the shortcode displays nothing.
 
-Version 2 replaces the former shared settings record with UUID-keyed integration
-profiles. It deliberately performs no schema migration, dual reads, page
-inspection, or content rewriting. Existing shared settings are not used at
-runtime. Recreate each required integration through the profile editor after
-upgrading. There is no default profile, page selector, or legacy shortcode.
+## Using it with RAN Turnstile
 
-### Developer compatibility
+RAN EmailOctopus and RAN Turnstile can operate on the same Jetpack forms because
+they have different responsibilities:
 
-The canonical shortcode is
-`[ran_emailoctopus_jetpack_forms_subscription_message]`. The six public
-configuration filters receive the effective value as their first argument and
-the immutable profile UUID as their second:
+- RAN Turnstile verifies the visitor.
+- Jetpack processes and stores the form submission.
+- RAN EmailOctopus handles configured newsletter subscriptions.
+
+Akismet can also remain enabled alongside both plugins.
+
+## Extension points
+
+Profile-aware integrations can adjust the effective configuration through these
+filters. Each receives the effective value followed by the immutable profile ID:
 
 - `ran_emailoctopus_jetpack_forms_contact_success_url`
 - `ran_emailoctopus_jetpack_forms_emailoctopus_form_id`
@@ -98,81 +98,38 @@ the immutable profile UUID as their second:
 - `ran_emailoctopus_jetpack_forms_emailoctopus_field_map`
 - `ran_emailoctopus_jetpack_forms_newsletter_source`
 
-Version 2 provides no deprecated filter aliases, destination constants, or
-global/default-profile getters.
+## External services
 
-### Health checks
+Jetpack Forms is a required local plugin dependency. EmailOctopus is contacted
+only when an administrator requests provider information or runs a health check,
+and when an eligible visitor opts in through a configured form.
 
-The integrations index calculates routing and subscription counts from local
-configuration only; loading it makes no EmailOctopus request. Run **Health** for
-an individual profile when provider validation is required. The stored result
-is tied to that profile and its current revision, so a later settings change
-invalidates stale results. A failing profile remains isolated from unrelated
-profiles.
+An opted-in subscription sends the visitor's email address and only the fields
+deliberately mapped by the administrator. Site administrators remain responsible
+for provider accounts, consent and appropriate privacy notices.
 
-### Notifications and competing integrations
-
-Jetpack remains responsible for form notifications, feedback storage, and its
-spam pipeline. Because notifications use WordPress's normal mail path, an SMTP
-or transactional-email plugin that integrates with WordPress mail can continue
-to handle them.
-
-Do not configure a second EmailOctopus connector to subscribe the same saved
-forms: both connectors could act on one opt-in. Turnstile or Akismet may protect
-the form independently because they validate spam or interaction rather than
-performing the EmailOctopus subscription. Review any provider that also changes
-Jetpack redirects or forces AJAX submission, because the configured success
-page requires this integration's normal-post handling.
-
-## Privacy and external services
-
-The plugin has no bundled third-party code. See [THIRD-PARTY.md](THIRD-PARTY.md)
-for the service and licence inventory.
-
-- Jetpack Forms is a required local plugin dependency.
-- While an administrator edits a destination, resolves custom fields, or runs a
-  profile health check, EmailOctopus receives authenticated requests for account
-  form or list configuration. Those requests do not include visitor form values.
-- When a visitor opts in through an eligible configured form, EmailOctopus
-  receives that visitor's email address and only deliberately mapped fields.
-
-Site administrators are responsible for provider accounts, legal notices, and
-consent before enabling external services.
+See [THIRD-PARTY.md](THIRD-PARTY.md) for the dependency and external-service
+inventory.
 
 ## Development
 
-Run commands from this plugin directory:
-
 ```sh
 pnpm install --frozen-lockfile
-composer install
-pnpm make-pot
+composer install --no-interaction
 pnpm check
-composer run phpcs
-WP_TESTS_DIR=/path/to/wordpress-tests-lib composer test
-pnpm release
+pnpm check:generated
+pnpm lint:php
+WP_TESTS_DIR=/path/to/wordpress-tests-lib pnpm test:php
+pnpm release:verify
 ```
 
-`pnpm release` creates a clean ZIP from the explicit
-[release allowlist](release-contents.txt), verifies its archive integrity, and
-never overwrites an existing archive. The GitHub workflow checks PHP 8.0 and
-the current supported PHP combination, translation freshness, PHPCS, PHPUnit,
-Plugin Check, and release archive contents.
+See [AGENTS.md](AGENTS.md) for the complete contributor workflow and
+[RELEASE.md](RELEASE.md) for release management.
 
-## Agent workflow
+## Support
 
-See [AGENTS.md](AGENTS.md) for the local Dex workflow, WordPress skills,
-generated-asset rules, quality checks, and release guidance.
-
-## WordPress.org preparation
-
-The public directory readme is [readme.txt](readme.txt). GitHub remains the
-development source; [RELEASE.md](RELEASE.md) documents the manual SVN
-`trunk`, tagged-release, and separate `/assets` handoff. Do not submit before
-the final directory slug, contributor account, trademarks, and third-party
-terms are confirmed.
-
-## License
+Report bugs and reproducible problems through
+[GitHub Issues](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/issues).
 
 RAN EmailOctopus for Jetpack Forms is licensed under
 [GPL-2.0-or-later](LICENSE).
