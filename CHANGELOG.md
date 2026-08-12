@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.3.0](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/compare/v2.2.0...v2.3.0) (2026-08-12)
+
+
+### Features
+
+* adopt shared admin shell ([722b40b](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/commit/722b40b5f554e7a5f7c1ccb76a1f38f1fc0d897b))
+
+
+### Bug Fixes
+
+* align admin continuity and profile guidance ([d56209e](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/commit/d56209ee815d881265d6ace817335d91cf81d9ce))
+* bound PHP setup and protect admin shell ([08263bd](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/commit/08263bdd3571235c80e2b3cca9eeb427fa3918bf))
+* preserve admin routes and translate footer ([24071d3](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/commit/24071d3eeb5c8621a989be0df45b80f272c6e70f))
+* refine EmailOctopus header mark ([7a80c02](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/commit/7a80c02b3d4d619db216e4844deb01635df06053))
+* revise EmailOctopus identity ([9a569ba](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/commit/9a569ba54c5ab6dd96a750062583123b95117923))
+
 ## [2.2.0](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/compare/v2.1.0...v2.2.0) (2026-07-30)
 
 
