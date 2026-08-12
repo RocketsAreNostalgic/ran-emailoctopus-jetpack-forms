@@ -6,8 +6,8 @@
  * x-release-please-start-version
  * Version: 2.2.0
  * x-release-please-end
- * Author: bnjmnrsh
- * Author URI: https://github.com/RocketsAreNostalgic/
+ * Author: Rockets Are Nostalgic
+ * Author URI: https://github.com/RocketsAreNostalgic
  * Text Domain: ran-emailoctopus-jetpack-forms
  * Domain Path: /languages
  * Requires at least: 6.8

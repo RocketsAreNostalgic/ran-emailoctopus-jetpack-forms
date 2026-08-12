@@ -53,6 +53,28 @@ plugin. It does not provide a second credential field.
 Jetpack's native **Form notifications** settings continue to control email
 recipients. This plugin does not replace WordPress mail handling.
 
+## Success pages and the shared shortcode
+
+The plugin registers one canonical success-page shortcode, shared by every
+integration profile:
+
+`[ran_emailoctopus_jetpack_forms_subscription_message]`
+
+The shortcode is not unique to a form or profile and does not need a form or
+profile attribute. Add the same shortcode to every page selected as a profile's
+success page.
+
+- One profile may own one or more saved Jetpack forms. Those forms share that
+  profile's success page and visitor messages.
+- Forms that need different success pages or messages must use separate
+  profiles.
+- Separate profiles may use different success pages or share one success page.
+  A one-time result token selects the correct profile and message after each
+  submission.
+
+Without a valid result token, or when viewed on a page other than the resolved
+profile's success page, the shortcode displays nothing.
+
 ## Using it with RAN Turnstile
 
 RAN EmailOctopus and RAN Turnstile can operate on the same Jetpack forms because
@@ -63,12 +85,6 @@ they have different responsibilities:
 - RAN EmailOctopus handles configured newsletter subscriptions.
 
 Akismet can also remain enabled alongside both plugins.
-
-## Upgrading from version 1
-
-Version 2 uses independent integration profiles and does not migrate the former
-shared settings. Recreate each required integration through the profile editor
-after upgrading. There is no default profile or legacy shortcode fallback.
 
 ## Extension points
 

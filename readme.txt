@@ -72,6 +72,19 @@ Yes. Reuse an assigned saved form on each route. Several compatible forms may
 share a profile; forms needing different destinations, mappings, success pages,
 or messages belong to separate profiles.
 
+= Does each form have its own success-page shortcode? =
+
+No. The plugin registers one canonical shortcode, shared by every integration
+profile:
+[ran_emailoctopus_jetpack_forms_subscription_message]. Add that same shortcode
+to every configured success page. All forms assigned to one profile share its
+success page and visitor messages. Forms needing different success pages or
+messages belong to separate profiles.
+
+Separate profiles may use different success pages or share one page. After a
+submission, a one-time result token tells the shortcode which profile's message
+to display. Without a valid token, or on the wrong page, it displays nothing.
+
 = Why does the health check say EmailOctopus routing is disabled? =
 
 Routing needs authoritative saved-form identity from Jetpack and a valid,

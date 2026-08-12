@@ -89,14 +89,25 @@ final class Admin {
 	public static function render_page() {
 		self::require_capability();
 
-		$active_tab      = self::get_active_tab();
-		$view            = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( $_GET['view'] ) ) : 'index'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin view routing.
-		$profile_id      = self::request_profile_id( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin view routing.
-		$settings_url    = self::page_url();
-		$ran_admin_shell = array(
+		$active_tab        = self::get_active_tab();
+		$view              = isset( $_GET['view'] ) ? sanitize_key( wp_unslash( $_GET['view'] ) ) : 'index'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin view routing.
+		$profile_id        = self::request_profile_id( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin view routing.
+		$overview_url      = self::page_url( array( 'tab' => 'overview' ) );
+		$settings_url      = self::page_url( array( 'tab' => 'settings' ) );
+		$plugin_headers    = get_file_data(
+			RAN_EMAILOCTOPUS_JETPACK_FORMS_PLUGIN_FILE,
+			array(
+				'author'     => 'Author',
+				'author_uri' => 'Author URI',
+			),
+			'plugin'
+		);
+		$plugin_author     = is_string( $plugin_headers['author'] ?? null ) ? trim( $plugin_headers['author'] ) : '';
+		$plugin_author_url = is_string( $plugin_headers['author_uri'] ?? null ) ? trim( $plugin_headers['author_uri'] ) : '';
+		$ran_admin_shell   = array(
 			'name'             => __( 'RAN EmailOctopus for Jetpack Forms', 'ran-emailoctopus-jetpack-forms' ),
-			'home_url'         => $settings_url,
-			'strapline'        => __( 'Connect selected Jetpack forms to EmailOctopus without replacing Jetpack’s form workflow.', 'ran-emailoctopus-jetpack-forms' ),
+			'home_url'         => $overview_url,
+			'strapline'        => __( 'Connect selected Jetpack forms to EmailOctopus.', 'ran-emailoctopus-jetpack-forms' ),
 			'logo'             => array(
 				'url'    => RAN_EMAILOCTOPUS_JETPACK_FORMS_PLUGIN_URL . 'assets/ran-emailoctopus-mark.svg',
 				'width'  => 54,
@@ -105,14 +116,14 @@ final class Admin {
 			'navigation_label' => __( 'RAN EmailOctopus', 'ran-emailoctopus-jetpack-forms' ),
 			'navigation'       => array(
 				array(
+					'label'   => __( 'Overview', 'ran-emailoctopus-jetpack-forms' ),
+					'url'     => $overview_url,
+					'current' => 'overview' === $active_tab,
+				),
+				array(
 					'label'   => __( 'Settings', 'ran-emailoctopus-jetpack-forms' ),
 					'url'     => $settings_url,
 					'current' => 'settings' === $active_tab,
-				),
-				array(
-					'label'   => __( 'Overview', 'ran-emailoctopus-jetpack-forms' ),
-					'url'     => self::page_url( array( 'tab' => 'overview' ) ),
-					'current' => 'overview' === $active_tab,
 				),
 			),
 		);
@@ -137,15 +148,26 @@ final class Admin {
 				}
 			}
 			?>
+			<hr>
+			<div class="ran-emailoctopus-jetpack-forms-footer">
+				<p>
+					Copyright &copy; <?php echo esc_html( wp_date( 'Y' ) ); ?>
+					<?php if ( '' !== $plugin_author && '' !== $plugin_author_url ) : ?>
+						<a href="<?php echo esc_url( $plugin_author_url ); ?>"><?php echo esc_html( $plugin_author ); ?></a>
+					<?php else : ?>
+						<?php echo esc_html( $plugin_author ); ?>
+					<?php endif; ?>
+				</p>
+			</div>
 		</div>
 		<?php
 	}
 
-	/** Return the selected shell tab, defaulting invalid input to Settings. */
+	/** Return the selected shell tab, defaulting invalid input to Overview. */
 	private static function get_active_tab() {
-		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'settings'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only view selection.
+		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'overview'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only view selection.
 
-		return 'overview' === $tab ? 'overview' : 'settings';
+		return 'settings' === $tab ? 'settings' : 'overview';
 	}
 
 	/** Render the consumer-owned product overview and support links. */
@@ -494,7 +516,8 @@ final class Admin {
 					?>
 				</p>
 				<?php self::render_message_fields( $values['messages'] ?? array() ); ?>
-				<p><strong><?php esc_html_e( 'Success-page shortcode', 'ran-emailoctopus-jetpack-forms' ); ?></strong><br /><input class="large-text code" readonly type="text" value="[<?php echo esc_attr( SubmissionMessages::SHORTCODE ); ?>]" /></p>
+				<p><strong><?php esc_html_e( 'Success-page shortcode', 'ran-emailoctopus-jetpack-forms' ); ?></strong><br /><input aria-describedby="ran-success-page-shortcode-description" class="large-text code" readonly type="text" value="[<?php echo esc_attr( SubmissionMessages::SHORTCODE ); ?>]" /></p>
+				<p class="description" id="ran-success-page-shortcode-description"><?php esc_html_e( 'This is the plugin\'s only success-page shortcode; every integration profile uses it. Each profile selects one success page, and every form assigned to it shares that page and its visitor messages. Use separate profiles for forms that need different success pages or messages. Multiple profiles may select the same success page because the one-time result token selects the correct profile message.', 'ran-emailoctopus-jetpack-forms' ); ?></p>
 				<?php submit_button( __( 'Save profile behaviour', 'ran-emailoctopus-jetpack-forms' ) ); ?>
 			</form>
 		</div>
@@ -1034,7 +1057,16 @@ final class Admin {
 
 	/** Build the integrations page URL. */
 	private static function page_url( $args = array() ) {
-		return add_query_arg( array_merge( array( 'page' => self::PAGE_SLUG ), $args ), admin_url( 'options-general.php' ) );
+		return add_query_arg(
+			array_merge(
+				array(
+					'page' => self::PAGE_SLUG,
+					'tab'  => 'settings',
+				),
+				$args
+			),
+			admin_url( 'options-general.php' )
+		);
 	}
 
 	/** Per-user, per-profile health transient key. */
