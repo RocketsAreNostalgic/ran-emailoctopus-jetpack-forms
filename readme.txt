@@ -2,7 +2,7 @@
 Contributors: bnjmnrsh
 Tags: contact form, jetpack, emailoctopus, newsletter
 Requires at least: 6.8
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 8.0
 X-Release-Please-Start-Version: x-release-please-start-version
 Stable tag: 2.3.0
