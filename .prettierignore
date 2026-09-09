@@ -2,6 +2,7 @@ build/
 node_modules/
 vendor/
 .codex/
+.agents/skills/
 *.min.css
 CHANGELOG.md
 assets/ran-admin-shell.css
