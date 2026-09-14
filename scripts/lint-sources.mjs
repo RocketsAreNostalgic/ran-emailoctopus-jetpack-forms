@@ -6,7 +6,8 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const type = process.argv[2];
 const extension = 'js' === type ? '.js' : '.css';
-const command = 'win32' === process.platform ? 'wp-scripts.cmd' : 'wp-scripts';
+const tool = 'js' === type ? 'eslint' : 'stylelint';
+const command = 'win32' === process.platform ? `${tool}.cmd` : tool;
 const directoriesToIgnore = new Set(['.git', 'dist', 'node_modules', 'vendor']);
 const filesToIgnore = new Set([resolve(root, 'assets/ran-admin-shell.css')]);
 
@@ -35,14 +36,10 @@ if (0 === files.length) {
 	process.exit(0);
 }
 
-const result = spawnSync(
-	command,
-	['js' === type ? 'lint-js' : 'lint-style', ...files],
-	{
-		cwd: root,
-		stdio: 'inherit',
-		shell: 'win32' === process.platform,
-	}
-);
+const result = spawnSync(command, files, {
+	cwd: root,
+	stdio: 'inherit',
+	shell: 'win32' === process.platform,
+});
 
 process.exit(result.status ?? 1);
