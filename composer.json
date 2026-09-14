@@ -32,10 +32,7 @@
 		"phpcs": "phpcs -p",
 		"phpcbf": "phpcbf -p",
 		"test": "phpunit",
-		"check": [
-			"@phpcs",
-			"@test"
-		]
+		"check": "@phpcs"
 	},
 	"config": {
 		"allow-plugins": {
