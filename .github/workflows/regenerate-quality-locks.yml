@@ -8,9 +8,10 @@ on:
       - composer.json
       - package.json
       - phpcs.xml.dist
-      - eslint.config.js
+      - eslint.config.mjs
       - .stylelintrc.json
       - prettier.config.cjs
+      - .prettierignore
       - scripts/lint-sources.mjs
       - .github/workflows/regenerate-quality-locks.yml
 
