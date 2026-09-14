@@ -41,7 +41,13 @@ jobs:
       - name: Regenerate locked dependency graphs
         run: |
           composer update --no-interaction --prefer-dist --no-progress
-          pnpm install --lockfile-only
+          pnpm install --no-frozen-lockfile
+
+      - name: Verify migrated quality contracts
+        run: |
+          composer check
+          pnpm check
+          pnpm check:generated
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
