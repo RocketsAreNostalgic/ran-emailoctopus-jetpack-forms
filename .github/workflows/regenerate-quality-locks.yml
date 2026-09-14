@@ -1,4 +1,4 @@
-name: Regenerate quality locks
+name: Verify migrated quality profile
 
 on:
   push:
@@ -11,6 +11,7 @@ on:
       - eslint.config.js
       - .stylelintrc.json
       - prettier.config.cjs
+      - scripts/lint-sources.mjs
       - .github/workflows/regenerate-quality-locks.yml
 
 permissions:
@@ -50,6 +51,7 @@ jobs:
           pnpm check:generated
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
         with:
           name: regenerated-quality-locks
           path: |
