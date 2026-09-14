@@ -42,7 +42,15 @@ jobs:
 
       - name: Regenerate locked dependency graphs
         run: |
-          composer update --no-interaction --prefer-dist --no-progress
+          composer update \
+            ran/coding-standards \
+            phpcompatibility/php-compatibility \
+            phpcompatibility/phpcompatibility-paragonie \
+            phpcompatibility/phpcompatibility-wp \
+            --with-dependencies \
+            --no-interaction \
+            --prefer-dist \
+            --no-progress
           pnpm install --no-frozen-lockfile
 
       - name: Verify migrated quality contracts
