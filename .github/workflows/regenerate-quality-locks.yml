@@ -30,7 +30,7 @@ jobs:
         with:
           php-version: '8.0'
           coverage: none
-          tools: composer:v2
+          tools: composer:v2, wp-cli
 
       - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
         with:
