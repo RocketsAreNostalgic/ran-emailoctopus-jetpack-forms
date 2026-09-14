@@ -15,6 +15,12 @@ permissions:
     contents: read
 
 jobs:
+    baseline:
+        uses: RocketsAreNostalgic/.github/.github/workflows/quality-wordpress-plugin.yml@72a90b5826db37d1e94cdcdcf3374ccf58c0aa7d # accepted quality-v1 provider
+        with:
+            php-version: '8.3'
+            pnpm-version: '11.5.2'
+
     quality:
         name: Quality and release artifact
         runs-on: blacksmith-2vcpu-ubuntu-2404
@@ -326,3 +332,29 @@ jobs:
             - name: Destroy the pinned Plugin Check environment
               if: always()
               run: wp-env destroy --force
+
+    quality-gate:
+        name: quality
+        if: ${{ always() }}
+        needs:
+            - baseline
+            - quality
+            - compatibility
+            - plugin-check
+        runs-on: ubuntu-latest
+        steps:
+            - name: Require all ordinary quality lanes
+              env:
+                  BASELINE_RESULT: ${{ needs.baseline.result }}
+                  SOURCE_RESULT: ${{ needs.quality.result }}
+                  COMPATIBILITY_RESULT: ${{ needs.compatibility.result }}
+                  PLUGIN_CHECK_RESULT: ${{ needs.plugin-check.result }}
+              run: |
+                  printf 'baseline=%s\nsource=%s\ncompatibility=%s\nplugin-check=%s\n' \
+                    "$BASELINE_RESULT" "$SOURCE_RESULT" "$COMPATIBILITY_RESULT" "$PLUGIN_CHECK_RESULT"
+                  if [ "$BASELINE_RESULT" != success ] \
+                    || [ "$SOURCE_RESULT" != success ] \
+                    || [ "$COMPATIBILITY_RESULT" != success ] \
+                    || [ "$PLUGIN_CHECK_RESULT" != success ]; then
+                      exit 1
+                  fi

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ruleset name="RAN EmailOctopus for Jetpack Forms">
-	<description>WordPress Coding Standards and PHP 8.0 compatibility checks.</description>
+	<description>RAN WordPress plugin standards with repository-local support and identity policy.</description>
 	<file>includes</file>
 	<file>ran-emailoctopus-jetpack-forms.php</file>
 	<file>tests</file>
@@ -8,21 +8,20 @@
 	<arg name="basepath" value="."/>
 	<arg name="colors"/>
 	<arg value="sp"/>
-	<config name="minimum_supported_wp_version" value="6.5"/>
+
+	<!-- Repository support policy remains local. -->
+	<config name="minimum_supported_wp_version" value="6.8"/>
 	<config name="testVersion" value="8.0-"/>
-	<rule ref="WordPress-Extra"/>
+
+	<!-- Shared RAN WordPress/WPCS/PHPCompatibility ancestry. -->
+	<rule ref="RANWordPressPlugin"/>
+
+	<!-- Repository identity remains local. -->
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
 				<element value="ran-emailoctopus-jetpack-forms"/>
 			</property>
 		</properties>
-	</rule>
-	<rule ref="PHPCompatibility"/>
-	<rule ref="WordPress.Files.FileName.NotHyphenatedLowercase">
-		<severity>0</severity>
-	</rule>
-	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
-		<severity>0</severity>
 	</rule>
 </ruleset>
