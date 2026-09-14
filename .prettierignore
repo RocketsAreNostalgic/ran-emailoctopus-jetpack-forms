@@ -5,6 +5,8 @@ vendor/
 .agents/skills/
 *.min.css
 CHANGELOG.md
+pnpm-lock.yaml
+.github/workflows/regenerate-quality-locks.yml
 assets/ran-admin-shell.css
 includes/generated/ran-admin-shell.php
 includes/generated/ran-admin-shell.provenance.json
