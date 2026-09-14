@@ -63,6 +63,26 @@ stage the result. The pre-commit hook checks POT freshness for its configured
 source paths; tooling, documentation, and release-only changes must not cause
 an unnecessary regeneration.
 
+## Quality profile and ownership
+
+This repository uses the RAN `wordpress-plugin` quality profile.
+
+- `ran/coding-standards` owns the organisation-wide PHP, WordPress Coding
+  Standards, and PHPCompatibility ancestry. This repository continues to own
+  its PHP and WordPress support ranges, source paths, text domain, identity,
+  fixtures, and justified PHPCS exceptions.
+- `@rocketsarenostalgic/quality-config` owns the shared ESLint, Prettier, and
+  Stylelint ancestry. This repository continues to own source selection,
+  generated/vendor exclusions, globals, applicability, and product-specific
+  exceptions.
+- `composer check` is the deterministic PHP source-quality contract that can
+  run without provisioning WordPress. WordPress integration PHPUnit remains
+  owned by the compatibility matrix.
+- `pnpm check` is the deterministic frontend quality contract.
+- Release-artifact verification, WordPress/Jetpack compatibility, and Plugin
+  Check remain repository-owned specialist gates. Shared quality adoption must
+  not remove or weaken them.
+
 ## Git and commits
 
 Use Conventional Commits with one coherent change per commit. `feat:` and
