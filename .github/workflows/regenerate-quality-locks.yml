@@ -3,7 +3,7 @@ name: Regenerate quality locks
 on:
   push:
     branches:
-      - chore/adopt-shared-quality-profile
+      - chore/adopt-shared-quality-profile-v2
     paths:
       - composer.json
       - package.json
