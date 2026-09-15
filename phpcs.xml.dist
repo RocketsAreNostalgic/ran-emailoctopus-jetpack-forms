@@ -10,7 +10,7 @@
 	<arg value="sp"/>
 
 	<!-- Repository support policy remains local. -->
-	<config name="minimum_supported_wp_version" value="6.8"/>
+	<config name="minimum_wp_version" value="6.8"/>
 	<config name="testVersion" value="8.0-"/>
 
 	<!-- Shared RAN WordPress/WPCS/PHPCompatibility ancestry. -->
