@@ -6,24 +6,48 @@ const workflow = await readFile(
 	'.github/workflows/reconcile-v2.3.0-resume.yml',
 	'utf8'
 );
+const admissionStart = workflow.indexOf('\n    admission:\n');
 const pluginCheckStart = workflow.indexOf('\n    plugin-check:\n');
 const publishStart = workflow.indexOf('\n    publish:\n', pluginCheckStart + 1);
 
-assert.ok(pluginCheckStart > 0, 'resume Plugin Check job is missing');
+assert.ok(admissionStart > 0, 'resume admission job is missing');
+assert.ok(pluginCheckStart > admissionStart, 'resume Plugin Check job is missing');
 assert.ok(publishStart > pluginCheckStart, 'resume publisher job is missing');
 
+const admission = workflow.slice(admissionStart, pluginCheckStart);
 const pluginCheck = workflow.slice(pluginCheckStart, publishStart);
 const publisher = workflow.slice(publishStart);
+const pluginCheckHeader = pluginCheck.slice(0, pluginCheck.indexOf('\n        steps:\n'));
 
 function includes(target, value) {
 	assert.ok(target.includes(value), `missing contract: ${value}`);
 }
 
-test('resume is canonical and bound to the qualified source run', () => {
+test('resume authenticates the exact merged resume PR before tooling checkout', () => {
 	assert.doesNotMatch(workflow, /workflow_dispatch:/);
 	for (const value of [
 		"github.event.workflow_run.path == '.github/workflows/quality.yml'",
 		'github.event.workflow_run.head_repository.full_name == github.repository',
+		"RAN_RESUME_PR: '27'",
+		'.merge_commit_sha == $trigger',
+		'.head.ref == "fix/reconcile-v2.3.0-historical-plugin-check"',
+		'.title == "fix(release): resume v2.3.0 historical reconciliation"',
+	]) {
+		includes(admission, value);
+	}
+	includes(pluginCheck, 'needs: admission');
+	includes(pluginCheck, "if: ${{ needs.admission.result == 'success' }}");
+	assert.ok(
+		workflow.indexOf('Prove the trigger is the exact merged resume PR') <
+			workflow.indexOf(
+				'actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd'
+			),
+		'trusted tooling must not be checked out before resume admission'
+	);
+});
+
+test('resume is bound to the fixed historical qualification evidence', () => {
+	for (const value of [
 		"RAN_SOURCE_RUN: '35268651964'",
 		'RAN_SOURCE_HEAD: c76aadf6c3da3cceb08e36fe777f0d61ccf11b7d',
 		'RAN_HISTORICAL_COMMIT: 48a76148363ea1672b8d93f6e0914d2d37644db5',
@@ -37,7 +61,7 @@ test('resume is canonical and bound to the qualified source run', () => {
 	}
 });
 
-test('resume Plugin Check proves and consumes fixed qualification', () => {
+test('resume Plugin Check scopes API credentials away from historical execution', () => {
 	for (const value of [
 		'actions: read',
 		'contents: read',
@@ -52,6 +76,11 @@ test('resume Plugin Check proves and consumes fixed qualification', () => {
 	]) {
 		includes(pluginCheck, value);
 	}
+	assert.doesNotMatch(pluginCheckHeader, /GH_TOKEN|GITHUB_TOKEN/);
+	assert.match(
+		pluginCheck,
+		/name: Prove the fixed historical qualification run\n\s+env:\n\s+GH_TOKEN: \$\{\{ secrets\.GITHUB_TOKEN \}\}/
+	);
 });
 
 test('resume publisher is source-free and exact-tag gated', () => {
