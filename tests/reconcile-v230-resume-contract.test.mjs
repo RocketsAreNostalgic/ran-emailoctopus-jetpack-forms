@@ -25,10 +25,10 @@ function includes(target, value) {
 
 test('resume authenticates the exact merged resume PR before tooling checkout', () => {
 	assert.doesNotMatch(workflow, /workflow_dispatch:/);
+	includes(workflow, "RAN_RESUME_PR: '27'");
 	for (const value of [
 		"github.event.workflow_run.path == '.github/workflows/quality.yml'",
 		'github.event.workflow_run.head_repository.full_name == github.repository',
-		"RAN_RESUME_PR: '27'",
 		'.merge_commit_sha == $trigger',
 		'.head.ref == "fix/reconcile-v2.3.0-historical-plugin-check"',
 		'.title == "fix(release): resume v2.3.0 historical reconciliation"',
