@@ -89,7 +89,7 @@ test('historical source executes only in read-only qualification jobs', () => {
 	assert.match(rebuild, /retention-days: 30/);
 });
 
-test('fresh qualification preserves compatibility and pinned Plugin Check evidence', () => {
+test('fresh qualification preserves compatibility and bounded historical Plugin Check evidence', () => {
 	assert.match(compatibility, /php: '8\.0'/);
 	assert.match(compatibility, /wordpress: '6\.8'/);
 	assert.match(compatibility, /jetpack: '15\.5'/);
@@ -100,10 +100,18 @@ test('fresh qualification preserves compatibility and pinned Plugin Check eviden
 		pluginCheck,
 		/PLUGIN_CHECK_CORE_REF: WordPress\/WordPress#7\.0\.3/
 	);
+	assert.match(pluginCheck, /PLUGIN_CHECK_VERSION: 2\.1\.0/);
 	assert.match(pluginCheck, /PLUGIN_CHECK_WP_ENV_VERSION: 11\.13\.0/);
 	assert.match(
 		pluginCheck,
 		/ref: \$\{\{ github\.event\.workflow_run\.head_sha \}\}/
+	);
+	assert.match(pluginCheck, /outdated_tested_upto_header/);
+	assert.match(pluginCheck, /Tested up to: 7\.0 < 7\.1\./);
+	assert.match(pluginCheck, /if waived != 1:/);
+	assert.match(
+		pluginCheck,
+		/node \.plugin-check-action\/dist\/index\.js "\$FILTERED_RESULTS_FILE"/
 	);
 });
 
