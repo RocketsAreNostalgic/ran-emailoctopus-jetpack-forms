@@ -12,22 +12,31 @@ function parseBlocks(rawResults) {
 		return [];
 	}
 
-	return normalized.split(/\n\n(?=FILE: )/).map((block) => {
-		const newline = block.indexOf('\n');
-		if (newline < 0 || !block.startsWith('FILE: ')) {
-			throw new Error('Unexpected Plugin Check result block.');
+	const lines = normalized.split('\n');
+	if (lines.length % 2 !== 0) {
+		throw new Error('Unexpected Plugin Check result framing.');
+	}
+
+	const blocks = [];
+	for (let index = 0; index < lines.length; index += 2) {
+		const fileLine = lines[index];
+		const findingsLine = lines[index + 1];
+		if (!fileLine.startsWith('FILE: ')) {
+			throw new Error('Unexpected Plugin Check result file marker.');
 		}
 
-		const file = block.slice('FILE: '.length, newline);
-		const findings = JSON.parse(block.slice(newline + 1));
+		const file = fileLine.slice('FILE: '.length);
+		const findings = JSON.parse(findingsLine);
 		if (!Array.isArray(findings)) {
 			throw new Error(
 				`Plugin Check findings are not an array for ${file}.`
 			);
 		}
 
-		return { file, findings };
-	});
+		blocks.push({ file, findings });
+	}
+
+	return blocks;
 }
 
 function isHistoricalTestedUpToFinding(file, finding) {
@@ -77,7 +86,7 @@ export function filterHistoricalTestedUpTo(rawResults, readme) {
 		);
 	}
 
-	return `${filteredBlocks.join('\n\n')}\n`;
+	return `${filteredBlocks.join('\n')}\n`;
 }
 
 async function main() {
