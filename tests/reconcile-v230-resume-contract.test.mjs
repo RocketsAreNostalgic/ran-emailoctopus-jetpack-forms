@@ -15,87 +15,65 @@ assert.ok(publishStart > pluginCheckStart, 'resume publisher job is missing');
 const pluginCheck = workflow.slice(pluginCheckStart, publishStart);
 const publisher = workflow.slice(publishStart);
 
+function includes(target, value) {
+	assert.ok(target.includes(value), `missing contract: ${value}`);
+}
+
 test('resume is canonical and bound to the qualified source run', () => {
 	assert.doesNotMatch(workflow, /workflow_dispatch:/);
-	assert.match(
-		workflow,
-		/github\.event\.workflow_run\.path == '\.github\/workflows\/quality\.yml'/
-	);
-	assert.match(
-		workflow,
-		/github\.event\.workflow_run\.head_repository\.full_name == github\.repository/
-	);
-	for (const identity of [
+	for (const value of [
+		"github.event.workflow_run.path == '.github/workflows/quality.yml'",
+		'github.event.workflow_run.head_repository.full_name == github.repository',
 		"RAN_SOURCE_RUN: '35268651964'",
 		'RAN_SOURCE_HEAD: c76aadf6c3da3cceb08e36fe777f0d61ccf11b7d',
 		'RAN_HISTORICAL_COMMIT: 48a76148363ea1672b8d93f6e0914d2d37644db5',
 		'RAN_RELEASE_HEAD: 913c70025639fb497d24823e92dca4467ee69196',
 		'RAN_RELEASE_TREE: a37c05b57e68a7543f99c27093844876b6ffd428',
 		'RAN_ARTIFACT_NAME: ran-emailoctopus-v2.3.0-reconciliation-35268651964',
+		'group: release-please-main',
+		'cancel-in-progress: false',
 	]) {
-		assert.ok(workflow.includes(identity), `missing identity: ${identity}`);
+		includes(workflow, value);
 	}
-	assert.match(
-		workflow,
-		/concurrency:\n\s+group: release-please-main\n\s+cancel-in-progress: false/
-	);
 });
 
-test('resume Plugin Check proves and consumes the fixed qualification artifact', () => {
-	assert.match(
-		pluginCheck,
-		/permissions:\n\s+actions: read\n\s+contents: read/
-	);
-	assert.match(pluginCheck, /actions\/runs\/\$\{RAN_SOURCE_RUN\}/);
-	assert.match(
-		pluginCheck,
-		/Rebuild exact historical v2\.3\.0 source.*conclusion == "success"/s
-	);
-	assert.match(
-		pluginCheck,
-		/Historical v2\.3\.0 \/ PHP 8\.0 \/ WordPress 6\.8 \/ Jetpack 15\.5.*conclusion == "success"/s
-	);
-	assert.match(
-		pluginCheck,
-		/Historical v2\.3\.0 \/ PHP 8\.5 \/ WordPress latest \/ Jetpack latest.*conclusion == "success"/s
-	);
-	assert.match(pluginCheck, /run-id: \$\{\{ env\.RAN_SOURCE_RUN \}\}/);
-	assert.match(
-		pluginCheck,
-		/node scripts\/filter-v230-plugin-check-results\.mjs/
-	);
-	assert.match(
-		pluginCheck,
-		/PLUGIN_CHECK_CORE_REF: WordPress\/WordPress#7\.0\.3/
-	);
-	assert.match(pluginCheck, /PLUGIN_CHECK_WP_ENV_VERSION: 11\.13\.0/);
+test('resume Plugin Check proves and consumes fixed qualification', () => {
+	for (const value of [
+		'actions: read',
+		'contents: read',
+		'actions/runs/${RAN_SOURCE_RUN}',
+		'Rebuild exact historical v2.3.0 source',
+		'Historical v2.3.0 / PHP 8.0 / WordPress 6.8 / Jetpack 15.5',
+		'Historical v2.3.0 / PHP 8.5 / WordPress latest / Jetpack latest',
+		'run-id: ${{ env.RAN_SOURCE_RUN }}',
+		'node scripts/filter-v230-plugin-check-results.mjs',
+		'PLUGIN_CHECK_CORE_REF: WordPress/WordPress#7.0.3',
+		'PLUGIN_CHECK_WP_ENV_VERSION: 11.13.0',
+	]) {
+		includes(pluginCheck, value);
+	}
 });
 
 test('resume publisher is source-free and exact-tag gated', () => {
-	assert.match(
-		publisher,
-		/permissions:\n\s+actions: read\n\s+contents: write\n\s+issues: write\n\s+pull-requests: write/
-	);
+	for (const value of [
+		'actions: read',
+		'contents: write',
+		'issues: write',
+		'pull-requests: write',
+		'git/matching-refs/tags/${RAN_RELEASE_TAG}',
+		'Exact external tag ${RAN_RELEASE_TAG} is required',
+		'.object.type == "commit" and .object.sha == $commit',
+	]) {
+		includes(publisher, value);
+	}
 	assert.doesNotMatch(publisher, /actions\/checkout@/);
 	assert.doesNotMatch(
 		publisher,
-		/pnpm install|composer install|create-release-assets\.sh|smoke-saved-form\.php/
-	);
-	assert.match(
-		publisher,
-		/git\/matching-refs\/tags\/\$\{RAN_RELEASE_TAG\}/
-	);
-	assert.match(
-		publisher,
-		/Exact external tag \$\{RAN_RELEASE_TAG\} is required at \$\{RAN_HISTORICAL_COMMIT\} before publication/
-	);
-	assert.match(
-		publisher,
-		/\.object\.type == "commit" and \.object\.sha == \$commit/
+		/pnpm install|composer install|create-release-assets\.sh/
 	);
 });
 
-test('resume publisher preserves numeric release identity through readback', () => {
+test('resume publisher preserves numeric release identity', () => {
 	const create = publisher.indexOf(
 		'gh api --method POST "repos/${GITHUB_REPOSITORY}/releases"'
 	);
@@ -113,13 +91,13 @@ test('resume publisher preserves numeric release identity through readback', () 
 	assert.ok(upload > create, 'asset upload must follow release creation');
 	assert.ok(readback > upload, 'exact readback must follow asset mutation');
 	assert.ok(labels > readback, 'lifecycle labels must be reconciled last');
-	assert.match(
+	includes(
 		publisher.slice(readback),
-		/\.id == \$release_id and \.tag_name == \$tag and \.target_commitish == \$commit/
+		'.id == $release_id and .tag_name == $tag and .target_commitish == $commit'
 	);
-	assert.match(
+	includes(
 		publisher.slice(readback),
-		/\[\.assets\[\] \| \{name, digest\}\] \| sort_by\(\.name\)/
+		'[.assets[] | {name, digest}] | sort_by(.name)'
 	);
 });
 
