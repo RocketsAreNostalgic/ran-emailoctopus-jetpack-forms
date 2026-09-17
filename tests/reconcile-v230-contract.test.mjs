@@ -86,6 +86,7 @@ test('historical source executes only in read-only qualification jobs', () => {
 		rebuild,
 		/name: ran-emailoctopus-v2\.3\.0-reconciliation-\$\{\{ github\.run_id \}\}/
 	);
+	assert.match(rebuild, /retention-days: 30/);
 });
 
 test('fresh qualification preserves compatibility and pinned Plugin Check evidence', () => {
@@ -122,6 +123,10 @@ test('publisher is source-free and requires a pre-authorized exact tag', () => {
 	);
 	assert.match(
 		publisher,
+		/git\/matching-refs\/tags\/\$\{RAN_RELEASE_TAG\}/
+	);
+	assert.match(
+		publisher,
 		/\.object\.type == "commit" and \.object\.sha == \$commit/
 	);
 	assert.doesNotMatch(publisher, /gh release create/);
@@ -148,6 +153,7 @@ test('publisher keeps exact identity checks before release mutation and exact re
 		'git/commits/${RAN_RELEASE_HEAD}',
 		'manifest_version="$(gh api',
 		'.archive == $archive and .commit == $commit and .sha256 == $sha256 and .tag == $tag and .version == $version',
+		'git/matching-refs/tags/${RAN_RELEASE_TAG}',
 		'Expected exactly one ${RAN_RELEASE_TAG} tag',
 	]) {
 		const position = publisher.indexOf(precondition);
@@ -159,6 +165,9 @@ test('publisher keeps exact identity checks before release mutation and exact re
 	}
 
 	for (const postcondition of [
+		'RELEASE_ID: ${{ steps.identity.outputs.release-id || steps.draft.outputs.release-id }}',
+		'--argjson release_id "$RELEASE_ID"',
+		'.id == $release_id and .tag_name == $tag',
 		'releases/tags/${RAN_RELEASE_TAG}',
 		'git/ref/tags/${RAN_RELEASE_TAG}',
 		'[.assets[].name] | sort',
