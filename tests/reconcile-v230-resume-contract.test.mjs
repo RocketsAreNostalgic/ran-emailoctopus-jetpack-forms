@@ -11,13 +11,19 @@ const pluginCheckStart = workflow.indexOf('\n    plugin-check:\n');
 const publishStart = workflow.indexOf('\n    publish:\n', pluginCheckStart + 1);
 
 assert.ok(admissionStart > 0, 'resume admission job is missing');
-assert.ok(pluginCheckStart > admissionStart, 'resume Plugin Check job is missing');
+assert.ok(
+	pluginCheckStart > admissionStart,
+	'resume Plugin Check job is missing'
+);
 assert.ok(publishStart > pluginCheckStart, 'resume publisher job is missing');
 
 const admission = workflow.slice(admissionStart, pluginCheckStart);
 const pluginCheck = workflow.slice(pluginCheckStart, publishStart);
 const publisher = workflow.slice(publishStart);
-const pluginCheckHeader = pluginCheck.slice(0, pluginCheck.indexOf('\n        steps:\n'));
+const pluginCheckHeader = pluginCheck.slice(
+	0,
+	pluginCheck.indexOf('\n        steps:\n')
+);
 
 function includes(target, value) {
 	assert.ok(target.includes(value), `missing contract: ${value}`);
@@ -36,7 +42,10 @@ test('resume authenticates the exact merged resume PR before tooling checkout', 
 		includes(admission, value);
 	}
 	includes(pluginCheck, 'needs: admission');
-	includes(pluginCheck, "if: ${{ needs.admission.result == 'success' }}");
+	includes(
+		pluginCheck,
+		"if: ${{ needs.admission.result == 'success' }}"
+	);
 	assert.ok(
 		workflow.indexOf('Prove the trigger is the exact merged resume PR') <
 			workflow.indexOf(
