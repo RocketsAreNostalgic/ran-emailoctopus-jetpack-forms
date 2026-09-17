@@ -54,9 +54,13 @@ function runFilter({
 		mkdirSync(pluginRoot, { recursive: true });
 		writeFileSync(path.join(pluginRoot, 'readme.txt'), readme);
 		writeFileSync(resultsPath, results);
-		return spawnSync(process.execPath, [scriptPath, resultsPath, pluginRoot], {
-			encoding: 'utf8',
-		});
+		return spawnSync(
+			process.execPath,
+			[scriptPath, resultsPath, pluginRoot],
+			{
+				encoding: 'utf8',
+			}
+		);
 	} finally {
 		rmSync(root, { recursive: true, force: true });
 	}
