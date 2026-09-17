@@ -36,7 +36,7 @@ function results(blocks) {
 		.map(
 			({ file, findings }) => `FILE: ${file}\n${JSON.stringify(findings)}`
 		)
-		.join('\n\n');
+		.join('\n');
 	return `${rendered}\n`;
 }
 
