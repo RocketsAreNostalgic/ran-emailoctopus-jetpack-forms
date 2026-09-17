@@ -8,7 +8,9 @@ const workflowUrl = new URL(
 );
 const workflow = readFileSync(workflowUrl, 'utf8');
 assert.equal(
-	existsSync(new URL('../.github/workflows/release-please.yml', import.meta.url)),
+	existsSync(
+		new URL('../.github/workflows/release-please.yml', import.meta.url)
+	),
 	false,
 	'legacy dispatchable workflow path must stay absent so historical tags cannot be manually dispatched'
 );
