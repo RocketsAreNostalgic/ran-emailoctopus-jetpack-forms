@@ -30,13 +30,19 @@ function sourceMatchesHistoricalRelease(file) {
 
 	const sourcePath = path.join(pluginRoot, file);
 	const sourceLines = fs.readFileSync(sourcePath, 'utf8').split(/\r?\n/);
-	const hasTestedUpTo = sourceLines.includes(
-		`Tested up to: ${historicalTestedUpTo.testedUpTo}`
+	const testedUpToHeaders = sourceLines.filter((line) =>
+		line.startsWith('Tested up to: ')
 	);
-	const hasStableTag = sourceLines.includes(
-		`Stable tag: ${historicalTestedUpTo.stableTag}`
+	const stableTagHeaders = sourceLines.filter((line) =>
+		line.startsWith('Stable tag: ')
 	);
-	return hasTestedUpTo && hasStableTag;
+	return (
+		testedUpToHeaders.length === 1 &&
+		testedUpToHeaders[0] ===
+			`Tested up to: ${historicalTestedUpTo.testedUpTo}` &&
+		stableTagHeaders.length === 1 &&
+		stableTagHeaders[0] === `Stable tag: ${historicalTestedUpTo.stableTag}`
+	);
 }
 
 function isHistoricalTestedUpTo(file, finding) {
