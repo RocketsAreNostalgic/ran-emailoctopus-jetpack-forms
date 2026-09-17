@@ -1,10 +1,5 @@
 import assert from 'node:assert/strict';
-import {
-	mkdirSync,
-	mkdtempSync,
-	rmSync,
-	writeFileSync,
-} from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -38,28 +33,38 @@ function runFilter({
 	const root = mkdtempSync(path.join(tmpdir(), 'ran-emailoctopus-v230-'));
 	const pluginRoot = path.join(root, 'plugin');
 	const resultsPath = path.join(root, 'results.txt');
+	const warning = {
+		line: 0,
+		column: 0,
+		type: 'WARNING',
+		code: 'unexpected_markdown_file',
+		message: 'Unexpected markdown file.',
+		docs: '',
+	};
+	const results = [
+		'FILE: readme.txt',
+		JSON.stringify(findings),
+		'',
+		'FILE: THIRD-PARTY.md',
+		JSON.stringify([warning]),
+		'',
+	].join('\n');
+
 	try {
 		mkdirSync(pluginRoot, { recursive: true });
 		writeFileSync(path.join(pluginRoot, 'readme.txt'), readme);
-		writeFileSync(
-			resultsPath,
-			`FILE: readme.txt\n${JSON.stringify(findings)}\n\nFILE: THIRD-PARTY.md\n${JSON.stringify([
-				{
-					line: 0,
-					column: 0,
-					type: 'WARNING',
-					code: 'unexpected_markdown_file',
-					message: 'Unexpected markdown file.',
-					docs: '',
-				},
-			])}\n`
-		);
+		writeFileSync(resultsPath, results);
 		return spawnSync(process.execPath, [scriptPath, resultsPath, pluginRoot], {
 			encoding: 'utf8',
 		});
 	} finally {
 		rmSync(root, { recursive: true, force: true });
 	}
+}
+
+function expectFailure(result, pattern) {
+	assert.notEqual(result.status, 0);
+	assert.match(result.stderr, pattern);
 }
 
 test('accepts the exact historical Tested up to drift', () => {
@@ -77,23 +82,19 @@ test('rejects a changed historical message', () => {
 	const result = runFilter({
 		findings: [finding({ message: 'Tested up to: 7.0 < 7.2.' })],
 	});
-	assert.notEqual(result.status, 0);
-	assert.match(result.stderr, /Unexpected historical Tested up to finding/);
+	expectFailure(result, /Unexpected historical Tested up to finding/);
 });
 
 test('rejects a different stable tag in historical source', () => {
-	const result = runFilter({
-		readme: 'Tested up to: 7.0\nStable tag: 2.3.1\n',
-	});
-	assert.notEqual(result.status, 0);
-	assert.match(result.stderr, /Unexpected historical Tested up to finding/);
+	const readme = 'Tested up to: 7.0\nStable tag: 2.3.1\n';
+	const result = runFilter({ readme });
+	expectFailure(result, /Unexpected historical Tested up to finding/);
 });
 
 test('rejects duplicate historical findings', () => {
 	const exact = finding();
 	const result = runFilter({ findings: [exact, { ...exact }] });
-	assert.notEqual(result.status, 0);
-	assert.match(result.stderr, /at most one historical v2\.3\.0/);
+	expectFailure(result, /at most one historical v2\.3\.0/);
 });
 
 test('leaves unrelated warnings untouched', () => {
