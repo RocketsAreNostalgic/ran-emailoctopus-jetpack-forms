@@ -45,7 +45,7 @@
 		"lint:js": "node scripts/lint-sources.mjs js",
 		"lint:css": "node scripts/lint-sources.mjs css",
 		"lint:pkg-json": "wp-scripts lint-pkg-json",
-		"check": "pnpm run lint:pkg-json && pnpm run lint:js && pnpm run lint:css && pnpm run format:check && node --test scripts/release-recovery-contract.test.mjs",
+		"check": "pnpm run lint:pkg-json && pnpm run lint:js && pnpm run lint:css && prettier --write scripts/release-recovery-contract.test.mjs && git diff -- scripts/release-recovery-contract.test.mjs && false",
 		"make-pot": "node scripts/make-pot.mjs",
 		"check:generated": "composer admin-shell:check && pnpm make-pot && git diff --exit-code -- languages/ran-emailoctopus-jetpack-forms.pot",
 		"lint:php": "composer run phpcs",
