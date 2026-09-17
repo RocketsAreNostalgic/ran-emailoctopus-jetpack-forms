@@ -121,10 +121,7 @@ test('publisher is source-free and requires a pre-authorized exact tag', () => {
 		publisher,
 		/Exact external tag \$\{RAN_RELEASE_TAG\} is required at \$\{RAN_HISTORICAL_COMMIT\} before publication/
 	);
-	assert.match(
-		publisher,
-		/git\/matching-refs\/tags\/\$\{RAN_RELEASE_TAG\}/
-	);
+	assert.match(publisher, /git\/matching-refs\/tags\/\$\{RAN_RELEASE_TAG\}/);
 	assert.match(
 		publisher,
 		/\.object\.type == "commit" and \.object\.sha == \$commit/
