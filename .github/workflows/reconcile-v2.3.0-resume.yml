@@ -13,6 +13,7 @@ concurrency:
     cancel-in-progress: false
 
 env:
+    RAN_RESUME_PR: '27'
     RAN_SOURCE_RUN: '35268651964'
     RAN_SOURCE_HEAD: c76aadf6c3da3cceb08e36fe777f0d61ccf11b7d
     RAN_HISTORICAL_COMMIT: 48a76148363ea1672b8d93f6e0914d2d37644db5
@@ -24,20 +25,47 @@ env:
     RAN_ARTIFACT_NAME: ran-emailoctopus-v2.3.0-reconciliation-35268651964
 
 jobs:
-    plugin-check:
-        name: Re-qualify historical v2.3.0 Plugin Check
+    admission:
+        name: Authenticate exact v2.3.0 resume merge
         if: >-
             ${{ github.event.workflow_run.event == 'push'
                 && github.event.workflow_run.conclusion == 'success'
                 && github.event.workflow_run.head_branch == 'main'
                 && github.event.workflow_run.head_repository.full_name == github.repository
                 && github.event.workflow_run.path == '.github/workflows/quality.yml' }}
+        runs-on: ubuntu-latest
+        permissions:
+            pull-requests: read
+        steps:
+            - name: Prove the trigger is the exact merged resume PR
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  RAN_TRIGGER_SHA: ${{ github.event.workflow_run.head_sha }}
+              run: |
+                  set -euo pipefail
+                  resume_pr="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${RAN_RESUME_PR}")"
+                  jq -e \
+                    --arg trigger "$RAN_TRIGGER_SHA" \
+                    --arg repository "$GITHUB_REPOSITORY" \
+                    '.merged == true
+                     and .merged_at != null
+                     and .state == "closed"
+                     and .base.ref == "main"
+                     and .merge_commit_sha == $trigger
+                     and .head.ref == "fix/reconcile-v2.3.0-historical-plugin-check"
+                     and .head.repo.full_name == $repository
+                     and .title == "fix(release): resume v2.3.0 historical reconciliation"' \
+                    <<< "$resume_pr" >/dev/null
+
+    plugin-check:
+        name: Re-qualify historical v2.3.0 Plugin Check
+        needs: admission
+        if: ${{ needs.admission.result == 'success' }}
         runs-on: blacksmith-2vcpu-ubuntu-2404
         permissions:
             actions: read
             contents: read
         env:
-            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             PLUGIN_CHECK_CORE_REF: WordPress/WordPress#7.0.3
             PLUGIN_CHECK_SLUG: ran-emailoctopus-jetpack-forms
             PLUGIN_CHECK_WP_ENV_VERSION: 11.13.0
@@ -51,6 +79,8 @@ jobs:
               run: test "$(git rev-parse HEAD)" = '${{ github.event.workflow_run.head_sha }}'
 
             - name: Prove the fixed historical qualification run
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               shell: bash
               run: |
                   set -euo pipefail
