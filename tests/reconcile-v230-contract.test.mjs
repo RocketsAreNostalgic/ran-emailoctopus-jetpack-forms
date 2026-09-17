@@ -75,7 +75,10 @@ test('historical source executes only in read-only qualification jobs', () => {
 	}
 	assert.match(rebuild, /pnpm install --frozen-lockfile/);
 	assert.match(rebuild, /composer install --no-interaction/);
-	assert.match(rebuild, /bash scripts\/create-release-assets\.sh "\$RAN_RELEASE_TAG"/);
+	assert.match(
+		rebuild,
+		/bash scripts\/create-release-assets\.sh "\$RAN_RELEASE_TAG"/
+	);
 	assert.match(
 		rebuild,
 		/name: ran-emailoctopus-v2\.3\.0-reconciliation-\$\{\{ github\.run_id \}\}/
@@ -129,7 +132,10 @@ test('publisher keeps exact identity checks before release mutation and exact re
 		'https://uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}/assets?name=${asset_name}'
 	);
 	assert.ok(createRelease > 0, 'release-ID creation is missing');
-	assert.ok(upload > createRelease, 'asset upload must follow exact release creation');
+	assert.ok(
+		upload > createRelease,
+		'asset upload must follow exact release creation'
+	);
 
 	for (const precondition of [
 		'live_main="$(gh api',
@@ -143,7 +149,10 @@ test('publisher keeps exact identity checks before release mutation and exact re
 	]) {
 		const position = publisher.indexOf(precondition);
 		assert.ok(position >= 0, `missing precondition: ${precondition}`);
-		assert.ok(position < createRelease, `precondition moved after mutation: ${precondition}`);
+		assert.ok(
+			position < createRelease,
+			`precondition moved after mutation: ${precondition}`
+		);
 	}
 
 	for (const postcondition of [
