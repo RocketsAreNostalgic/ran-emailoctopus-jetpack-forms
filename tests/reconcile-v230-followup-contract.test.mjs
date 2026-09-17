@@ -33,7 +33,9 @@ function assertContains(text, needle) {
 
 function results(blocks) {
 	const rendered = blocks
-		.map(({ file, findings }) => `FILE: ${file}\n${JSON.stringify(findings)}`)
+		.map(
+			({ file, findings }) => `FILE: ${file}\n${JSON.stringify(findings)}`
+		)
 		.join('\n\n');
 	return `${rendered}\n`;
 }
@@ -107,7 +109,8 @@ test('filter removes only the exact historical drift', () => {
 		column: 0,
 		type: 'WARNING',
 		code: 'unexpected_markdown_file',
-		message: 'Unexpected markdown file "THIRD-PARTY.md" detected in plugin root.',
+		message:
+			'Unexpected markdown file "THIRD-PARTY.md" detected in plugin root.',
 		docs: '',
 	};
 	const filtered = filterHistoricalTestedUpTo(
@@ -165,7 +168,10 @@ test('filter rejects duplicate findings', () => {
 		() =>
 			filterHistoricalTestedUpTo(
 				results([
-					{ file: 'readme.txt', findings: [exactFinding, exactFinding] },
+					{
+						file: 'readme.txt',
+						findings: [exactFinding, exactFinding],
+					},
 				]),
 				'Tested up to: 7.0\n'
 			),
