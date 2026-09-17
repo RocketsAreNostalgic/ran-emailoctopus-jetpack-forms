@@ -116,7 +116,7 @@ jobs:
                       dist/ran-emailoctopus-jetpack-forms-2.3.0.manifest.json
                   if-no-files-found: error
                   overwrite: true
-                  retention-days: 7
+                  retention-days: 30
 
     compatibility:
         name: Historical v2.3.0 / PHP ${{ matrix.php }} / WordPress ${{ matrix.wordpress }} / Jetpack ${{ matrix.jetpack }}
@@ -415,8 +415,7 @@ jobs:
 
                   release_pages="$(gh api --paginate --slurp "repos/${GITHUB_REPOSITORY}/releases?per_page=100")"
                   release_match="$(jq -c --arg tag "$RAN_RELEASE_TAG" '[add | .[] | select(.tag_name == $tag)]' <<< "$release_pages")"
-                  tag_pages="$(gh api --paginate --slurp "repos/${GITHUB_REPOSITORY}/git/refs/tags?per_page=100")"
-                  tag_match="$(jq -c --arg ref "refs/tags/${RAN_RELEASE_TAG}" '[add | .[] | select(.ref == $ref)]' <<< "$tag_pages")"
+                  tag_match="$(gh api "repos/${GITHUB_REPOSITORY}/git/matching-refs/tags/${RAN_RELEASE_TAG}" | jq -c --arg ref "refs/tags/${RAN_RELEASE_TAG}" '[.[] | select(.ref == $ref)]')"
                   release_count="$(jq 'length' <<< "$release_match")"
                   tag_count="$(jq 'length' <<< "$tag_match")"
 
@@ -590,8 +589,11 @@ jobs:
 
             - name: Read back exact tag, release, assets, and digests
               shell: bash
+              env:
+                  RELEASE_ID: ${{ steps.identity.outputs.release-id || steps.draft.outputs.release-id }}
               run: |
                   set -euo pipefail
+                  test -n "$RELEASE_ID"
                   expected_names="$(
                       printf '%s\n' \
                         "ran-emailoctopus-jetpack-forms-${RAN_RELEASE_VERSION}.manifest.json" \
@@ -617,9 +619,10 @@ jobs:
                       if release_json="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${RAN_RELEASE_TAG}")" \
                         && tag_ref="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RAN_RELEASE_TAG}")"; then
                           if jq -e \
+                            --argjson release_id "$RELEASE_ID" \
                             --arg tag "$RAN_RELEASE_TAG" \
                             --arg commit "$RAN_HISTORICAL_COMMIT" \
-                            '.tag_name == $tag and .target_commitish == $commit and .draft == false and .prerelease == false' \
+                            '.id == $release_id and .tag_name == $tag and .target_commitish == $commit and .draft == false and .prerelease == false' \
                             <<< "$release_json" >/dev/null \
                             && jq -e --arg commit "$RAN_HISTORICAL_COMMIT" '.object.type == "commit" and .object.sha == $commit' <<< "$tag_ref" >/dev/null; then
                               actual_names="$(jq -c '[.assets[].name] | sort' <<< "$release_json")"
