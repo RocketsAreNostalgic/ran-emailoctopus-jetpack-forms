@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.3.1](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/compare/v2.3.0...v2.3.1) (2026-09-17)
+
+
+### Bug Fixes
+
+* enforce WordPress compatibility floor ([b02f510](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/commit/b02f51086cdec69518c79c3d2d8be92359693bba))
+* improve PHP setup in workflows with retry mechanism ([a1bac3a](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/commit/a1bac3a26aa2cae2857224fff5d5b3866f0bb377))
+* **release:** bound historical v2.3.0 Plugin Check waiver ([#26](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/issues/26)) ([020ba21](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/commit/020ba2181f1d261cb6583cf80231f11346ff53bc))
+* **release:** harden mutable recovery provenance ([#22](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/issues/22)) ([7f8fd57](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/commit/7f8fd57e70580d108cdc36145011eedc9f465674))
+* **release:** reconcile missing v2.3.0 publication ([#24](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/issues/24)) ([c76aadf](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/commit/c76aadf6c3da3cceb08e36fe777f0d61ccf11b7d))
+
+
+### Miscellaneous Chores
+
+* adopt shared RAN quality profile ([#18](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/issues/18)) ([2743302](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/commit/274330210134e494be382468f3722c83a77cf3dd))
+* **release:** remove v2.3.0 reconciliation scaffolding ([#28](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/issues/28)) ([440de78](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/commit/440de788a86f2a6e46f4f6d77d874687664be3ac))
+
 ## [2.3.0](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/compare/v2.2.0...v2.3.0) (2026-08-12)
 
 
