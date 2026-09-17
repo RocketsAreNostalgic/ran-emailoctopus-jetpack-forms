@@ -26,7 +26,10 @@ assert.ok(
 	pluginCheckStart > compatibilityStart,
 	'reconciliation Plugin Check job is missing'
 );
-assert.ok(publishStart > pluginCheckStart, 'reconciliation publisher is missing');
+assert.ok(
+	publishStart > pluginCheckStart,
+	'reconciliation publisher is missing'
+);
 
 const rebuild = workflow.slice(rebuildStart, compatibilityStart);
 const compatibility = workflow.slice(compatibilityStart, pluginCheckStart);
