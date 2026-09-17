@@ -1,5 +1,10 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	rmSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -34,8 +39,7 @@ function runFilter({
 	const pluginRoot = path.join(root, 'plugin');
 	const resultsPath = path.join(root, 'results.txt');
 	try {
-		writeFileSync(path.join(root, 'placeholder'), '');
-		fsMkdir(pluginRoot);
+		mkdirSync(pluginRoot, { recursive: true });
 		writeFileSync(path.join(pluginRoot, 'readme.txt'), readme);
 		writeFileSync(
 			resultsPath,
@@ -58,16 +62,14 @@ function runFilter({
 	}
 }
 
-function fsMkdir(directory) {
-	const result = spawnSync('mkdir', ['-p', directory]);
-	assert.equal(result.status, 0);
-}
-
 test('accepts the exact historical Tested up to drift', () => {
 	const result = runFilter();
 	assert.equal(result.status, 0, result.stderr);
 	assert.match(result.stdout, /"type":"WARNING"/);
-	assert.match(result.stdout, /Accepted historical v2\.3\.0 Tested up to drift/);
+	assert.match(
+		result.stdout,
+		/Accepted historical v2\.3\.0 Tested up to drift/
+	);
 	assert.match(result.stdout, /unexpected_markdown_file/);
 });
 
