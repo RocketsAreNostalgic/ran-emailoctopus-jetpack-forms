@@ -72,7 +72,11 @@ test('resume Plugin Check scopes API credentials away from historical execution'
 		'run-id: ${{ env.RAN_SOURCE_RUN }}',
 		'node scripts/filter-v230-plugin-check-results.mjs',
 		'PLUGIN_CHECK_CORE_REF: WordPress/WordPress#7.0.3',
+		'PLUGIN_CHECK_VERSION: 2.1.0',
 		'PLUGIN_CHECK_WP_ENV_VERSION: 11.13.0',
+		'wp plugin install plugin-check --version="$PLUGIN_CHECK_VERSION" --activate',
+		'wp plugin get plugin-check --field=version',
+		'test "$installed_plugin_check" = "$PLUGIN_CHECK_VERSION"',
 	]) {
 		includes(pluginCheck, value);
 	}
