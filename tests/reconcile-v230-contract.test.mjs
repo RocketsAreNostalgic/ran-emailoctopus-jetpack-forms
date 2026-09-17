@@ -89,7 +89,7 @@ test('historical source executes only in read-only qualification jobs', () => {
 	assert.match(rebuild, /retention-days: 30/);
 });
 
-test('fresh qualification preserves compatibility and bounded historical Plugin Check evidence', () => {
+test('fresh qualification preserves compatibility and bounds the historical Plugin Check waiver exactly', () => {
 	assert.match(compatibility, /php: '8\.0'/);
 	assert.match(compatibility, /wordpress: '6\.8'/);
 	assert.match(compatibility, /jetpack: '15\.5'/);
@@ -106,9 +106,30 @@ test('fresh qualification preserves compatibility and bounded historical Plugin 
 		pluginCheck,
 		/ref: \$\{\{ github\.event\.workflow_run\.head_sha \}\}/
 	);
-	assert.match(pluginCheck, /outdated_tested_upto_header/);
-	assert.match(pluginCheck, /Tested up to: 7\.0 < 7\.1\./);
-	assert.match(pluginCheck, /if waived != 1:/);
+	assert.match(
+		pluginCheck,
+		/wp-env run cli wp plugin install plugin-check --version="\$PLUGIN_CHECK_VERSION" --activate/
+	);
+	assert.match(
+		pluginCheck,
+		/test "\$\(wp-env run cli wp plugin get plugin-check --field=version\)" = "\$PLUGIN_CHECK_VERSION"/
+	);
+	assert.match(
+		pluginCheck,
+		/historical_staleness = \(\n\s+current_file == 'readme\.txt'\n\s+and finding\.get\('type'\) == 'ERROR'\n\s+and finding\.get\('code'\) == 'outdated_tested_upto_header'\n\s+and message\.startswith\('Tested up to: 7\.0 < 7\.1\.'\)\n\s+\)/
+	);
+	assert.match(
+		pluginCheck,
+		/if historical_staleness:\n\s+waived \+= 1\n\s+else:\n\s+kept\.append\(finding\)/
+	);
+	assert.match(
+		pluginCheck,
+		/if waived != 1:\n\s+raise SystemExit\(\n\s+f'Expected exactly one historical outdated_tested_upto_header finding; saw \{waived\}'/
+	);
+	assert.match(
+		pluginCheck,
+		/target\.write_text\('\\n'\.join\(output\) \+ '\\n'\)/
+	);
 	assert.match(
 		pluginCheck,
 		/node \.plugin-check-action\/dist\/index\.js "\$FILTERED_RESULTS_FILE"/
