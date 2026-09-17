@@ -68,6 +68,7 @@ jobs:
         env:
             PLUGIN_CHECK_CORE_REF: WordPress/WordPress#7.0.3
             PLUGIN_CHECK_SLUG: ran-emailoctopus-jetpack-forms
+            PLUGIN_CHECK_VERSION: 2.1.0
             PLUGIN_CHECK_WP_ENV_VERSION: 11.13.0
         steps:
             - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -185,7 +186,9 @@ jobs:
                   RAW_RESULTS: ${{ runner.temp }}/plugin-check-v230-raw.txt
               run: |
                   set -euo pipefail
-                  wp-env run cli wp plugin install plugin-check --activate
+                  wp-env run cli wp plugin install plugin-check --version="$PLUGIN_CHECK_VERSION" --activate
+                  installed_plugin_check="$(wp-env run cli wp plugin get plugin-check --field=version 2>/dev/null | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | tail -n 1)"
+                  test "$installed_plugin_check" = "$PLUGIN_CHECK_VERSION"
                   dependencies="$(wp-env run cli wp plugin get "$PLUGIN_CHECK_SLUG" --field=requires_plugins | tr ',' ' ')"
                   if [[ -n "$dependencies" ]]; then
                       # WordPress owns these dependency slugs; word splitting is intentional.
