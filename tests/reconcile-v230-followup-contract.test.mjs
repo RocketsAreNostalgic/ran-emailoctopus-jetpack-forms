@@ -40,8 +40,8 @@ function results(blocks) {
 
 test('authenticates the exact failed producer', () => {
 	assert.doesNotMatch(workflow, /workflow_dispatch:/);
+	assertContains(workflow, 'workflows: [Reconcile v2.3.0]');
 	for (const evidence of [
-		'workflows: [Reconcile v2.3.0]',
 		"github.event.workflow_run.path == '.github/workflows/reconcile-v2.3.0.yml'",
 		'github.event.workflow_run.head_repository.full_name == github.repository',
 		"github.event.workflow_run.conclusion == 'failure'",
