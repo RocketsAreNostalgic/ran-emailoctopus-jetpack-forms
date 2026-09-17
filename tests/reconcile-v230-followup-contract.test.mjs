@@ -27,25 +27,29 @@ const exactFinding = {
 	docs: 'https://developer.wordpress.org/plugins/wordpress-org/how-your-readme-txt-works/#readme-header-information',
 };
 
-function results(blocks) {
-	return `${blocks
-		.map(({ file, findings }) => `FILE: ${file}\n${JSON.stringify(findings)}`)
-		.join('\n\n')}\n`;
+function assertContains(text, needle) {
+	assert.ok(text.includes(needle), `missing contract text: ${needle}`);
 }
 
-test('follow-up authenticates the exact failed reconciliation producer', () => {
+function results(blocks) {
+	const rendered = blocks
+		.map(({ file, findings }) => `FILE: ${file}\n${JSON.stringify(findings)}`)
+		.join('\n\n');
+	return `${rendered}\n`;
+}
+
+test('authenticates the exact failed producer', () => {
 	assert.doesNotMatch(workflow, /workflow_dispatch:/);
-	assert.match(workflow, /workflows: \[Reconcile v2\.3\.0\]/);
-	assert.match(
-		pluginCheck,
-		/github\.event\.workflow_run\.path == '\.github\/workflows\/reconcile-v2\.3\.0\.yml'/
-	);
-	assert.match(
-		pluginCheck,
-		/github\.event\.workflow_run\.head_repository\.full_name == github\.repository/
-	);
-	assert.match(pluginCheck, /github\.event\.workflow_run\.conclusion == 'failure'/);
-	assert.match(pluginCheck, /RAN_RECONCILE_RUN_ID: \$\{\{ github\.event\.workflow_run\.id \}\}/);
+	for (const evidence of [
+		'workflows: [Reconcile v2.3.0]',
+		"github.event.workflow_run.path == '.github/workflows/reconcile-v2.3.0.yml'",
+		'github.event.workflow_run.head_repository.full_name == github.repository',
+		"github.event.workflow_run.conclusion == 'failure'",
+		'RAN_RECONCILE_RUN_ID: ${{ github.event.workflow_run.id }}',
+	]) {
+		assertContains(pluginCheck, evidence);
+	}
+
 	for (const evidence of [
 		"require_job 'Rebuild exact historical v2.3.0 source' success",
 		"require_job 'Historical v2.3.0 / PHP 8.0 / WordPress 6.8 / Jetpack 15.5' success",
@@ -53,33 +57,25 @@ test('follow-up authenticates the exact failed reconciliation producer', () => {
 		"require_job 'Historical v2.3.0 / Plugin Check' failure",
 		"require_job 'Publish and read back missing v2.3.0' skipped",
 	]) {
-		assert.ok(pluginCheck.includes(evidence), `missing producer evidence: ${evidence}`);
+		assertContains(pluginCheck, evidence);
 	}
 });
 
-test('follow-up consumes only the exact failed-run artifact and pinned Plugin Check stack', () => {
-	assert.match(
-		pluginCheck,
-		/name: ran-emailoctopus-v2\.3\.0-reconciliation-\$\{\{ github\.event\.workflow_run\.id \}\}/
-	);
-	assert.match(pluginCheck, /run-id: \$\{\{ github\.event\.workflow_run\.id \}\}/);
-	assert.match(pluginCheck, /PLUGIN_CHECK_CORE_REF: WordPress\/WordPress#7\.0\.3/);
-	assert.match(pluginCheck, /PLUGIN_CHECK_WP_ENV_VERSION: 11\.13\.0/);
-	assert.match(
-		pluginCheck,
-		/ref: 98a1788320d0add90df2d8183934ecccbc4e05d2/
-	);
-	assert.match(
-		pluginCheck,
-		/node scripts\/filter-v230-plugin-check-results\.mjs/
-	);
-	assert.match(
-		pluginCheck,
-		/node \.plugin-check-action\/dist\/index\.js "\$RESULTS_FILE"/
-	);
+test('consumes exact artifact and pinned Plugin Check stack', () => {
+	for (const evidence of [
+		'name: ran-emailoctopus-v2.3.0-reconciliation-${{ github.event.workflow_run.id }}',
+		'run-id: ${{ github.event.workflow_run.id }}',
+		'PLUGIN_CHECK_CORE_REF: WordPress/WordPress#7.0.3',
+		'PLUGIN_CHECK_WP_ENV_VERSION: 11.13.0',
+		'ref: 98a1788320d0add90df2d8183934ecccbc4e05d2',
+		'node scripts/filter-v230-plugin-check-results.mjs',
+		'node .plugin-check-action/dist/index.js "$RESULTS_FILE"',
+	]) {
+		assertContains(pluginCheck, evidence);
+	}
 });
 
-test('follow-up publisher is source-free and preserves exact publication boundaries', () => {
+test('publisher remains source-free and exact', () => {
 	assert.match(
 		publisher,
 		/permissions:\n\s+actions: read\n\s+contents: write\n\s+issues: write\n\s+pull-requests: write/
@@ -89,26 +85,23 @@ test('follow-up publisher is source-free and preserves exact publication boundar
 		publisher,
 		/pnpm install|composer install|create-release-assets\.sh|smoke-saved-form\.php/
 	);
-	assert.match(publisher, /test "\$live_main" = "\$RAN_TRIGGER_SHA"/);
-	assert.match(publisher, /git\/matching-refs\/tags\/\$\{RAN_RELEASE_TAG\}/);
+
+	for (const evidence of [
+		'test "$live_main" = "$RAN_TRIGGER_SHA"',
+		'git/matching-refs/tags/${RAN_RELEASE_TAG}',
+		'gh api --method POST "repos/${GITHUB_REPOSITORY}/releases"',
+		'uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}/assets',
+		'--argjson release_id "$RELEASE_ID"',
+		'Published v2.3.0 readback did not converge to the qualified provenance',
+	]) {
+		assertContains(publisher, evidence);
+	}
+
 	assert.doesNotMatch(publisher, /gh release create/);
-	assert.match(
-		publisher,
-		/gh api --method POST "repos\/\$\{GITHUB_REPOSITORY\}\/releases"/
-	);
-	assert.match(
-		publisher,
-		/uploads\.github\.com\/repos\/\$\{GITHUB_REPOSITORY\}\/releases\/\$\{RELEASE_ID\}\/assets/
-	);
-	assert.match(publisher, /--argjson release_id "\$RELEASE_ID"/);
-	assert.match(
-		publisher,
-		/Published v2\.3\.0 readback did not converge to the qualified provenance/
-	);
 	assert.doesNotMatch(workflow, /deploy-wordpress-org|WORDPRESS_ORG|svn/);
 });
 
-test('filter removes exactly the known historical Tested up to finding and preserves warnings', () => {
+test('filter removes only the exact historical drift', () => {
 	const warning = {
 		line: 0,
 		column: 0,
@@ -144,7 +137,7 @@ test('filter preserves unrelated errors', () => {
 	assert.match(filtered, /other_error/);
 });
 
-test('filter fails closed if the historical source drifts', () => {
+test('filter rejects source drift', () => {
 	assert.throws(
 		() =>
 			filterHistoricalTestedUpTo(
@@ -155,7 +148,7 @@ test('filter fails closed if the historical source drifts', () => {
 	);
 });
 
-test('filter fails closed if the temporal finding changes', () => {
+test('filter rejects changed finding', () => {
 	const changed = { ...exactFinding, code: 'different_code' };
 	assert.throws(
 		() =>
@@ -167,7 +160,7 @@ test('filter fails closed if the temporal finding changes', () => {
 	);
 });
 
-test('filter fails closed on duplicate temporal findings', () => {
+test('filter rejects duplicate findings', () => {
 	assert.throws(
 		() =>
 			filterHistoricalTestedUpTo(
