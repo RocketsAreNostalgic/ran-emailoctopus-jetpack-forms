@@ -95,6 +95,28 @@ test('rejects a different stable tag in historical source', () => {
 	expectFailure(result, /Unexpected historical Tested up to finding/);
 });
 
+test('rejects duplicate Tested up to headers', () => {
+	const readme = [
+		'Tested up to: 7.0',
+		'Tested up to: 7.1',
+		'Stable tag: 2.3.0',
+		'',
+	].join('\n');
+	const result = runFilter({ readme });
+	expectFailure(result, /Unexpected historical Tested up to finding/);
+});
+
+test('rejects duplicate Stable tag headers', () => {
+	const readme = [
+		'Tested up to: 7.0',
+		'Stable tag: 2.3.0',
+		'Stable tag: 2.3.1',
+		'',
+	].join('\n');
+	const result = runFilter({ readme });
+	expectFailure(result, /Unexpected historical Tested up to finding/);
+});
+
 test('rejects duplicate historical findings', () => {
 	const exact = finding();
 	const result = runFilter({ findings: [exact, { ...exact }] });
