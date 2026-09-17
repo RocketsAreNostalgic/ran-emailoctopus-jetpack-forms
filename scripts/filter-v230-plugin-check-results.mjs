@@ -21,7 +21,9 @@ function parseBlocks(rawResults) {
 		const file = block.slice('FILE: '.length, newline);
 		const findings = JSON.parse(block.slice(newline + 1));
 		if (!Array.isArray(findings)) {
-			throw new Error(`Plugin Check findings are not an array for ${file}.`);
+			throw new Error(
+				`Plugin Check findings are not an array for ${file}.`
+			);
 		}
 
 		return { file, findings };
@@ -96,8 +98,7 @@ async function main() {
 }
 
 const invokedDirectly =
-	process.argv[1] &&
-	import.meta.url === pathToFileURL(process.argv[1]).href;
+	process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 
 if (invokedDirectly) {
 	await main();
