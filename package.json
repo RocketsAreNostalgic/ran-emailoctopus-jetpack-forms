@@ -41,7 +41,7 @@
 		"hooks:install": "git config core.hooksPath .githooks",
 		"prepare": "git config core.hooksPath .githooks",
 		"format": "prettier --write --ignore-path .prettierignore --ignore-unknown .",
-		"format:check": "prettier --write tests/filter-v230-plugin-check-results.test.mjs && git diff --exit-code -- tests/filter-v230-plugin-check-results.test.mjs",
+		"format:check": "prettier --check --ignore-path .prettierignore --ignore-unknown .",
 		"lint:js": "node scripts/lint-sources.mjs js",
 		"lint:css": "node scripts/lint-sources.mjs css",
 		"lint:pkg-json": "wp-scripts lint-pkg-json",
