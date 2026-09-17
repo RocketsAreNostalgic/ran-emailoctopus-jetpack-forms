@@ -95,6 +95,10 @@ async function main() {
 	console.log('Accepted exactly one historical Tested up to: 7.0 drift.');
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+const invokedDirectly =
+	process.argv[1] &&
+	import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (invokedDirectly) {
 	await main();
 }
