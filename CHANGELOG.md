@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.2](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/compare/v2.3.1...v2.3.2) (2026-09-17)
+
+
+### Bug Fixes
+
+* **release:** retire historical dispatch workflow path ([#30](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/issues/30)) ([5f321ab](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/commit/5f321ab56f3b2ba4434d1be83acf1ceb677fdde0))
+
 ## [2.3.1](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/compare/v2.3.0...v2.3.1) (2026-09-17)
 
 
