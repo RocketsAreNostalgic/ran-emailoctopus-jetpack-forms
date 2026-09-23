@@ -6,6 +6,10 @@ on:
         types: [completed]
         branches: [main]
 
+concurrency:
+    group: wordpress-org-deployment
+    cancel-in-progress: false
+
 permissions: {}
 
 jobs:

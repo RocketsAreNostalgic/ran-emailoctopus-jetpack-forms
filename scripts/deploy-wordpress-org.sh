@@ -48,11 +48,9 @@ test "$(git -C "${PLUGIN_ROOT}" rev-parse "${TAG_NAME}^{commit}")" = "$(git -C "
 PLUGIN_VERSION="$(sed -n 's/^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*\([^[:space:]]*\).*$/\1/p' "${PLUGIN_ROOT}/${MAIN_PLUGIN_FILE}")"
 test "${PLUGIN_VERSION}" = "${VERSION}"
 test "$(basename "${ARCHIVE_PATH}")" = "${PACKAGE_SLUG}-${VERSION}.zip"
-
-(
-	cd "$(dirname "${ARCHIVE_PATH}")"
-	sha256sum --check --strict "$(basename "${CHECKSUM_PATH}")"
-)
+test "$(basename "${CHECKSUM_PATH}")" = "$(basename "${ARCHIVE_PATH}").sha256"
+ARCHIVE_SHA256="$(sha256sum "${ARCHIVE_PATH}" | awk '{ print $1 }')"
+test "$(< "${CHECKSUM_PATH}")" = "$(printf '%s  %s' "${ARCHIVE_SHA256}" "$(basename "${ARCHIVE_PATH}")")"
 unzip -tqq "${ARCHIVE_PATH}"
 archive_entries="$(unzip -Z1 "${ARCHIVE_PATH}")"
 test -n "${archive_entries}"
