@@ -12,7 +12,10 @@ cleanup() {
 	rm -rf "$stage"
 }
 
-trap cleanup EXIT HUP INT TERM
+trap cleanup EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 if [ -e "$archive" ]; then
 	echo "Refusing to overwrite existing archive: $archive" >&2
@@ -24,8 +27,7 @@ cd "$root"
 
 composer admin-shell:check
 pnpm check
-find includes -name '*.php' -print0 | xargs -0 -n 1 php -l
-php -l ran-emailoctopus-jetpack-forms.php
+composer lint:syntax
 
 while IFS= read -r release_path; do
 	[ -n "$release_path" ] || continue

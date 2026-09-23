@@ -2,47 +2,60 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 
-const workflowUrl = new URL(
-	'../.github/workflows/release-publisher.yml',
-	import.meta.url
-);
-const workflow = readFileSync(workflowUrl, 'utf8');
-assert.equal(
-	existsSync(
-		new URL('../.github/workflows/release-please.yml', import.meta.url)
-	),
-	false,
-	'legacy dispatchable workflow path must stay absent so historical tags cannot be manually dispatched'
-);
+const root = new URL('../', import.meta.url);
+const read = (path) => readFileSync(new URL(path, root), 'utf8');
+const release = read('.github/workflows/release-please.yml');
+const deploy = read('.github/workflows/deploy-wordpress-org.yml');
+const quality = read('.github/workflows/quality.yml');
+const deployment = JSON.parse(read('wordpress-org/deployment.json'));
 
-test('release job requires the canonical Quality workflow path', () => {
-	const jobStart = workflow.indexOf('jobs:\n    release-please:');
-	const ifMarker = '        if: >-\n';
-	const ifStart = workflow.indexOf(ifMarker, jobStart);
-	const runsOn = workflow.indexOf('\n        runs-on:', ifStart);
+test('shared Profile B admits completed main Quality', () => {
+	assert.match(release, /workflows: \[Quality\]/);
+	assert.match(release, /branches: \[main\]/);
+	assert.match(
+		release,
+		/release-profile-b\.yml@e2fb19244a301a62f8fae2a80536898adf21fe22/
+	);
+	assert.match(
+		release,
+		/artifact-prefix: ran-emailoctopus-jetpack-forms-release/
+	);
+	assert.doesNotMatch(release, /workflow_dispatch:|--clobber/);
+	assert.equal(
+		existsSync(new URL('.github/workflows/release-publisher.yml', root)),
+		false
+	);
+	assert.equal(
+		existsSync(new URL('scripts/release-recovery-contract.test.mjs', root)),
+		false
+	);
+});
 
-	assert.ok(jobStart >= 0);
-	assert.ok(ifStart > jobStart);
-	assert.ok(runsOn > ifStart);
+test('Release Please candidates exercise terminal and product Quality', () => {
+	assert.match(quality, /github\.event_name == 'workflow_dispatch'/);
+	assert.match(
+		quality,
+		/release-please--branches--main--components--ran-emailoctopus-jetpack-forms/
+	);
+	assert.match(quality, /RAN_SOURCE_SHA/);
+	assert.match(quality, /name: quality\n\s+if:.*workflow_dispatch/);
+	assert.match(quality, /ran-profile-b-promotion\.json/);
+	assert.match(
+		quality,
+		/needs:\n\s+- baseline\n\s+- quality\n\s+- compatibility\n\s+- plugin-check/
+	);
+});
 
-	const conditionLines = workflow
-		.slice(ifStart + ifMarker.length, runsOn)
-		.trimEnd()
-		.split('\n');
-	const allLinesActive = conditionLines.every((line) => {
-		const isIndented = line.startsWith('            ');
-		const isComment = line.trimStart().startsWith('#');
-		return isIndented && !isComment;
-	});
-	assert.ok(allLinesActive);
-
-	const condition = conditionLines.map((line) => line.trim()).join(' ');
-	const terms = condition
-		.replace('${{', '')
-		.replace('}}', '')
-		.split('&&')
-		.map((term) => term.trim());
-	const pathGuard =
-		"github.event.workflow_run.path == '.github/workflows/quality.yml'";
-	assert.ok(terms.includes(pathGuard));
+test('WordPress.org observes immutable releases', () => {
+	assert.match(deploy, /workflows: \[Release Please\]/);
+	assert.match(deploy, /\.immutable == true/);
+	assert.match(deploy, /environment: wordpress-org/);
+	assert.match(deploy, /needs\.contract\.outputs\.enabled == 'true'/);
+	assert.doesNotMatch(deploy, /workflow_dispatch:|--allow-disabled/);
+	assert.equal(deployment.enabled, false);
+	assert.equal(deployment.syncListingAssets, false);
+	assert.doesNotMatch(
+		read('scripts/deploy-wordpress-org.sh'),
+		/--allow-disabled/
+	);
 });

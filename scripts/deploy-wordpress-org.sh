@@ -7,62 +7,74 @@ export TZ=UTC
 
 PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONFIG_PATH="${PLUGIN_ROOT}/wordpress-org/deployment.json"
-ARCHIVE_PATH="${1:?Usage: deploy-wordpress-org.sh <archive> <checksum> <manifest> [--allow-disabled] [--sync-assets]}"
+ARCHIVE_PATH="${1:?Usage: deploy-wordpress-org.sh <archive> <checksum> <vX.Y.Z> [--sync-assets]}"
 CHECKSUM_PATH="${2:?A SHA-256 file is required.}"
-MANIFEST_PATH="${3:?A release manifest is required.}"
+TAG_NAME="${3:?An immutable vX.Y.Z GitHub release tag is required.}"
 shift 3
 
-ALLOW_DISABLED=false
 SYNC_ASSETS=false
 for argument in "$@"; do
 	case "${argument}" in
-		--allow-disabled) ALLOW_DISABLED=true ;;
 		--sync-assets) SYNC_ASSETS=true ;;
 		*) echo "Unknown deployment option: ${argument}" >&2; exit 1 ;;
 	esac
 done
 
+if ! jq -e '(.enabled | type == "boolean") and (.syncListingAssets | type == "boolean")' "${CONFIG_PATH}" >/dev/null; then
+	echo "Invalid committed WordPress.org deployment contract: ${CONFIG_PATH}." >&2
+	exit 1
+fi
 ENABLED="$(jq -r '.enabled' "${CONFIG_PATH}")"
-if [[ "${ENABLED}" != true && "${ALLOW_DISABLED}" != true ]]; then
+if [[ "${ENABLED}" != true ]]; then
 	echo "Routine WordPress.org deployment is disabled in ${CONFIG_PATH}." >&2
 	exit 1
 fi
+if [[ "${SYNC_ASSETS}" == true && "$(jq -r '.syncListingAssets' "${CONFIG_PATH}")" != true ]]; then
+	echo 'Listing asset synchronization is not enabled by the committed deployment contract.' >&2
+	exit 1
+fi
+
+if [[ ! "${TAG_NAME}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+	echo 'An immutable semantic vX.Y.Z GitHub release tag is required.' >&2
+	exit 1
+fi
+VERSION="${TAG_NAME#v}"
 
 WORDPRESS_ORG_SLUG="$(jq -er '.wordpressOrgSlug | select(length > 0)' "${CONFIG_PATH}")"
 PACKAGE_SLUG="$(jq -er '.packageSlug' "${CONFIG_PATH}")"
 MAIN_PLUGIN_FILE="$(jq -er '.mainPluginFile' "${CONFIG_PATH}")"
 ASSETS_DIRECTORY="$(jq -er '.listingAssetsDirectory' "${CONFIG_PATH}")"
-VERSION="$(jq -er '.version' "${MANIFEST_PATH}")"
-TAG_NAME="$(jq -er '.tag' "${MANIFEST_PATH}")"
-ARCHIVE_SHA256="$(sha256sum "${ARCHIVE_PATH}" | cut -d ' ' -f 1)"
-ARCHIVE_FILES="$(unzip -Z1 "${ARCHIVE_PATH}" | LC_ALL=C sort | jq -Rsc 'split("\n") | map(select(length > 0))')"
-
-if [[ "${TAG_NAME}" != "v${VERSION}" ]]; then
-	echo "Release manifest tag and version do not agree." >&2
-	exit 1
-fi
-
-if [[ "$(jq -er '.archive' "${MANIFEST_PATH}")" != "$(basename "${ARCHIVE_PATH}")" || \
-	"$(jq -er '.sha256' "${MANIFEST_PATH}")" != "${ARCHIVE_SHA256}" || \
-	"$(jq -cer '.files' "${MANIFEST_PATH}")" != "$(jq -c <<< "${ARCHIVE_FILES}")" || \
-	"$(jq -er '.commit' "${MANIFEST_PATH}")" != "$(git -C "${PLUGIN_ROOT}" rev-parse HEAD)" || \
-	"$(jq -er '.packageSlug' "${MANIFEST_PATH}")" != "${PACKAGE_SLUG}" || \
-	"$(jq -er '.mainPluginFile' "${MANIFEST_PATH}")" != "${MAIN_PLUGIN_FILE}" || \
-	"$(jq -r '.wordpressOrgSlug' "${MANIFEST_PATH}")" != "${WORDPRESS_ORG_SLUG}" ]]; then
-	echo "Release manifest does not match the deployment contract." >&2
-	exit 1
-fi
-
-(
-	cd "$(dirname "${ARCHIVE_PATH}")"
-	sha256sum --check "$(basename "${CHECKSUM_PATH}")"
-)
+test "$(git -C "${PLUGIN_ROOT}" rev-parse "${TAG_NAME}^{commit}")" = "$(git -C "${PLUGIN_ROOT}" rev-parse HEAD)"
+PLUGIN_VERSION="$(sed -n 's/^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*\([^[:space:]]*\).*$/\1/p' "${PLUGIN_ROOT}/${MAIN_PLUGIN_FILE}")"
+test "${PLUGIN_VERSION}" = "${VERSION}"
+test "$(basename "${ARCHIVE_PATH}")" = "${PACKAGE_SLUG}-${VERSION}.zip"
+test "$(basename "${CHECKSUM_PATH}")" = "$(basename "${ARCHIVE_PATH}").sha256"
+ARCHIVE_SHA256="$(sha256sum "${ARCHIVE_PATH}" | awk '{ print $1 }')"
+test "$(< "${CHECKSUM_PATH}")" = "$(printf '%s  %s' "${ARCHIVE_SHA256}" "$(basename "${ARCHIVE_PATH}")")"
+unzip -tqq "${ARCHIVE_PATH}"
+archive_entries="$(unzip -Z1 "${ARCHIVE_PATH}")"
+test -n "${archive_entries}"
+while IFS= read -r entry; do
+	case "${entry}" in
+		"${PACKAGE_SLUG}/"*) ;;
+		*) echo "Unexpected release archive entry: ${entry}" >&2; exit 1 ;;
+	esac
+	if [[ "${entry}" == *"../"* || "${entry}" == *"/./"* || "${entry}" == *"\\"* ]]; then
+		echo "Unsafe release archive entry: ${entry}" >&2
+		exit 1
+	fi
+done <<< "${archive_entries}"
+ZIP_PLUGIN_VERSION="$(unzip -p "${ARCHIVE_PATH}" "${PACKAGE_SLUG}/${MAIN_PLUGIN_FILE}" | sed -n 's/^[[:space:]]*\*[[:space:]]*Version:[[:space:]]*\([^[:space:]]*\).*$/\1/p')"
+test "${ZIP_PLUGIN_VERSION}" = "${VERSION}"
 
 WORK_DIRECTORY="$(mktemp -d)"
 cleanup() {
 	rm -rf "${WORK_DIRECTORY}"
 }
-trap cleanup EXIT HUP INT TERM
+trap cleanup EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 unzip -q "${ARCHIVE_PATH}" -d "${WORK_DIRECTORY}/release"
 if [[ ! -f "${WORK_DIRECTORY}/release/${PACKAGE_SLUG}/${MAIN_PLUGIN_FILE}" ]]; then
