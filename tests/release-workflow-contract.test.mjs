@@ -9,14 +9,17 @@ const deploy = read('.github/workflows/deploy-wordpress-org.yml');
 const quality = read('.github/workflows/quality.yml');
 const deployment = JSON.parse(read('wordpress-org/deployment.json'));
 
-test('shared Profile B admits only completed main Quality, without manual recovery', () => {
+test('shared Profile B admits completed main Quality', () => {
 	assert.match(release, /workflows: \[Quality\]/);
 	assert.match(release, /branches: \[main\]/);
 	assert.match(
 		release,
 		/release-profile-b\.yml@e2fb19244a301a62f8fae2a80536898adf21fe22/
 	);
-	assert.match(release, /artifact-prefix: ran-emailoctopus-jetpack-forms-release/);
+	assert.match(
+		release,
+		/artifact-prefix: ran-emailoctopus-jetpack-forms-release/
+	);
 	assert.doesNotMatch(release, /workflow_dispatch:|--clobber/);
 	assert.equal(
 		existsSync(new URL('.github/workflows/release-publisher.yml', root)),
@@ -28,7 +31,7 @@ test('shared Profile B admits only completed main Quality, without manual recove
 	);
 });
 
-test('the exact Release Please candidate exercises terminal and product Quality', () => {
+test('Release Please candidates exercise terminal and product Quality', () => {
 	assert.match(quality, /github\.event_name == 'workflow_dispatch'/);
 	assert.match(
 		quality,
@@ -37,10 +40,13 @@ test('the exact Release Please candidate exercises terminal and product Quality'
 	assert.match(quality, /RAN_SOURCE_SHA/);
 	assert.match(quality, /name: quality\n\s+if:.*workflow_dispatch/);
 	assert.match(quality, /ran-profile-b-promotion\.json/);
-	assert.match(quality, /needs:\n\s+- baseline\n\s+- quality\n\s+- compatibility\n\s+- plugin-check/);
+	assert.match(
+		quality,
+		/needs:\n\s+- baseline\n\s+- quality\n\s+- compatibility\n\s+- plugin-check/
+	);
 });
 
-test('WordPress.org can only observe the immutable release under a committed contract', () => {
+test('WordPress.org observes immutable releases', () => {
 	assert.match(deploy, /workflows: \[Release Please\]/);
 	assert.match(deploy, /\.immutable == true/);
 	assert.match(deploy, /environment: wordpress-org/);
@@ -48,5 +54,8 @@ test('WordPress.org can only observe the immutable release under a committed con
 	assert.doesNotMatch(deploy, /workflow_dispatch:|--allow-disabled/);
 	assert.equal(deployment.enabled, false);
 	assert.equal(deployment.syncListingAssets, false);
-	assert.doesNotMatch(read('scripts/deploy-wordpress-org.sh'), /--allow-disabled/);
+	assert.doesNotMatch(
+		read('scripts/deploy-wordpress-org.sh'),
+		/--allow-disabled/
+	);
 });
