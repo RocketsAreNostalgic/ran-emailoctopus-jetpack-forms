@@ -29,10 +29,14 @@
 	"scripts": {
 		"admin-shell:check": "ran-admin-shell check --config=ran-admin-shell.json --immutable",
 		"admin-shell:sync": "ran-admin-shell sync --config=ran-admin-shell.json",
-		"phpcs": "phpcs -p",
-		"phpcbf": "phpcbf -p",
-		"test": "phpunit",
-		"check": "@phpcs"
+		"lint:syntax": "bash scripts/lint-php.sh",
+		"standards": "phpcs -p",
+		"standards:fix": "phpcbf -p",
+		"test:integration": "phpunit",
+		"check": [
+			"@lint:syntax",
+			"@standards"
+		]
 	},
 	"config": {
 		"allow-plugins": {

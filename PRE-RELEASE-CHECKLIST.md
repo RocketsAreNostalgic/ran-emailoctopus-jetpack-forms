@@ -31,17 +31,17 @@ pnpm install --frozen-lockfile
 composer install
 pnpm check
 pnpm run check:generated
-composer run phpcs
+composer check
 pnpm run release:verify
-pnpm run release:assets
 ```
 
+- [ ] Confirm exact Release Please candidate Quality and merged-main Quality passed, then use only the immutable GitHub release ZIP and checksum for initial WordPress.org submission. Never rebuild release bytes after qualification.
 - [ ] Confirm routine deployment remains disabled in `wordpress-org/deployment.json` until the WordPress.org slug is assigned and the first approved submission is complete.
 - [ ] Confirm the protected deployment workflow downloads the GitHub release assets before SVN staging and that `/assets` sync is only used deliberately.
 
 - [ ] Run Plugin Check against the unpacked release ZIP, matching the
       `.github/workflows/quality.yml` release job.
-- [ ] Install the generated ZIP into a fresh WordPress site with Jetpack active
+- [ ] Install the exact GitHub release ZIP into a fresh WordPress site with Jetpack active
       and verify activation, pattern insertion, zero-profile state, profile
       creation, both editor stages, multiple assigned forms beside an unassigned
       form, profile/form signed context, profile-specific success redirects and
@@ -64,7 +64,7 @@ pnpm run release:assets
 - [ ] Confirm the ZIP contains no old `ran_octopus_forms`,
       `ran_forms_settings`, or `ran-octopus-forms` identifiers and excludes every
       repository-only `OPTION-N-IMPLEMENTATION.md` plan.
-- [ ] Copy the validated release contents to WordPress.org SVN `trunk`, tag the
+- [ ] Copy the exact reviewed release ZIP contents to WordPress.org SVN `trunk`, tag the
       Release Please version, and upload only approved directory artwork/screenshots to
       `/assets`.
 
@@ -76,7 +76,7 @@ pnpm run release:assets
       Serialized pattern labels must be translated before insertion into the
       pattern content.
 - [ ] Run the WordPress i18n coding-standard sniff:
-      `composer run phpcs -- --sniffs=WordPress.WP.I18n`.
+      `composer standards -- --sniffs=WordPress.WP.I18n`.
 - [ ] Regenerate `languages/ran-emailoctopus-jetpack-forms.pot` with
       `pnpm make-pot` after
       all final user-facing copy changes.

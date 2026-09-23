@@ -51,8 +51,8 @@ composer install --no-interaction
 pnpm install --frozen-lockfile
 pnpm check
 pnpm check:generated
-pnpm lint:php
-WP_TESTS_DIR=/path/to/wordpress-tests-lib pnpm test:php
+composer check
+WP_TESTS_DIR=/path/to/wordpress-tests-lib composer test:integration
 pnpm release:verify
 ```
 
@@ -107,9 +107,14 @@ extra-file updates.
 the plugin metadata and validate them against the release version. Keep
 packaging or WordPress.org deployment separate from Release Please.
 
-Treat the existing initial-release preparation commit as the bootstrap
-boundary, preserve version `1.0.0` in the initial manifest, and review the
-first generated release PR before merging it.
+Release Please owns the version, changelog, canonical PR, tag, and release
+identity. Shared Profile B may promote only the exact ZIP and checksum from a
+successful merged-main Quality run after the exact Release Please candidate
+passes dispatched Quality. The repository manifest remains CI evidence. GitHub
+publication is immutable; recovery uses a source/build fix, fresh qualification,
+and a new version/tag. WordPress.org deployment is a separate optional observer
+of the successful immutable release; its committed contract currently disables
+deployment and listing-asset synchronization.
 
 ## External AI agent prohibition
 

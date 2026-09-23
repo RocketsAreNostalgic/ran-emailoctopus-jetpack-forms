@@ -11,7 +11,10 @@ cleanup() {
 	rm -rf "$workspace"
 }
 
-trap cleanup EXIT HUP INT TERM
+trap cleanup EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 sh "$root/scripts/build-release.sh" "$first_output"
 sh "$root/scripts/build-release.sh" "$second_output"

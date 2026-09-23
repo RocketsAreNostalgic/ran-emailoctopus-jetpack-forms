@@ -118,8 +118,8 @@ pnpm install --frozen-lockfile
 composer install --no-interaction
 pnpm check
 pnpm check:generated
-pnpm lint:php
-WP_TESTS_DIR=/path/to/wordpress-tests-lib pnpm test:php
+composer check
+WP_TESTS_DIR=/path/to/wordpress-tests-lib composer test:integration
 pnpm release:verify
 ```
 
