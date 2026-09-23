@@ -1,6 +1,6 @@
 {
 	"name": "ran-emailoctopus-jetpack-forms",
-	"version": "2.3.2",
+	"version": "2.3.3",
 	"private": true,
 	"description": "Connects opted-in Jetpack Forms submissions to EmailOctopus.",
 	"author": "bnjmnrsh",
