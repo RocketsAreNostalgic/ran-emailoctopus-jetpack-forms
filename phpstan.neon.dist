@@ -1,0 +1,11 @@
+parameters:
+    level: 3
+    phpVersion: 80000
+    paths:
+        - ran-emailoctopus-jetpack-forms.php
+        - includes
+    scanFiles:
+        - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+    bootstrapFiles:
+        - tests/phpstan/bootstrap.php
+    tmpDir: vendor/.cache/phpstan
