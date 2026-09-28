@@ -17,7 +17,7 @@ if ! find . \
 	-path './node_modules' -prune -o \
 	-path './vendor' -prune -o \
 	-path './.git' -prune -o \
-	-type f -name '*.php' -print0 > "$file_list"; then
+	-type f \( -name '*.php' -o -name '*.php.template' \) -print0 > "$file_list"; then
 	echo 'Unable to discover PHP files for syntax linting.' >&2
 	exit 1
 fi
