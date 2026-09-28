@@ -17,9 +17,11 @@
 		"php": ">=8.0"
 	},
 	"require-dev": {
+		"php-stubs/wordpress-stubs": "~6.8.0",
 		"phpcompatibility/php-compatibility": "10.0.0-alpha2",
 		"phpcompatibility/phpcompatibility-paragonie": "2.0.0-alpha2",
 		"phpcompatibility/phpcompatibility-wp": "3.0.0-alpha2",
+		"phpstan/phpstan": "^2.1",
 		"phpunit/phpunit": "^9.6",
 		"ran/admin-shell": "dev-main",
 		"ran/coding-standards": "dev-main",
@@ -35,8 +37,10 @@
 		"test:integration": "phpunit",
 		"check": [
 			"@lint:syntax",
-			"@standards"
-		]
+			"@standards",
+			"@analyze"
+		],
+		"analyze": "@php vendor/bin/phpstan analyse --configuration=phpstan.neon.dist --no-progress --memory-limit=1G"
 	},
 	"config": {
 		"allow-plugins": {
