@@ -4,6 +4,7 @@
 	<file>includes</file>
 	<file>ran-emailoctopus-jetpack-forms.php</file>
 	<file>tests</file>
+	<file>scripts</file>
 	<exclude-pattern>vendor/*</exclude-pattern>
 	<arg name="basepath" value="."/>
 	<arg name="colors"/>

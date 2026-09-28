@@ -22,6 +22,11 @@ if ! find . \
 	exit 1
 fi
 
+if [[ ! -s "${file_list}" ]]; then
+	echo "No PHP source files found." >&2
+	exit 1
+fi
+
 while IFS= read -r -d '' file; do
 	php -l "$file"
 done < "$file_list"
