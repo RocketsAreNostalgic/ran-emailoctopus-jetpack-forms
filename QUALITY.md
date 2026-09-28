@@ -51,3 +51,9 @@ execution remains in installed WordPress/Jetpack, separate from the ordinary
 quality regressions. The existing installed behavior suites, generated POT,
 immutable Admin Shell and release/archive gates remain required. Final native
 CI/review and main evidence are recorded in #36.
+
+Maintained `tests/wp-tests-config.php.template` is explicitly included in syntax
+and PHP-tokenized PHPCS/PHPCBF selection. Actual-command regressions introduce
+malformed PHP and formatting defects in this template, and snapshot repeatability
+includes its bytes. Its `$table_prefix` assignment has one narrow exception because
+WordPress requires that configuration global; other template checks remain active.
