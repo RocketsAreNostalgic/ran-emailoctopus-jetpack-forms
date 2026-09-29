@@ -129,6 +129,7 @@ jobs:
                   source_commit="$(git rev-parse HEAD)"
                   test "$source_commit" = "$RAN_SOURCE_SHA"
                   archive="dist/ran-emailoctopus-jetpack-forms-${version}.zip"
+                  python3 tests/phpstan-archive-coverage.py "$archive"
                   checksum="${archive}.sha256"
                   archive_sha256="$(sha256sum "$archive" | awk '{ print $1 }')"
                   checksum_sha256="$(sha256sum "$checksum" | awk '{ print $1 }')"

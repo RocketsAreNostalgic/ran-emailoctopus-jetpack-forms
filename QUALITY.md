@@ -36,6 +36,12 @@ represented as isolated production analysis. Runtime analysis covers all shipped
 PHP. Syntax failure controls, formatter repeatability and final native/review/
 merge evidence are separately recorded in #36; UI work remains deferred.
 
+The native Quality job now compares PHP files in the finished release ZIP with
+direct PHPStan paths. A disposable ZIP containing an uncovered root PHP file
+proves packaging changes fail until the analysis scope is updated. Imported
+or excluded PHPStan paths require review. The check does not alter the archive,
+the blocking level-3 floor or installed behavior tests.
+
 ## Syntax and formatter acceptance
 
 The syntax runner now rejects an empty selection and remains NUL-delimited.
