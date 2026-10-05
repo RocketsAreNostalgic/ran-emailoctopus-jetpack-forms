@@ -147,9 +147,9 @@ jobs:
             - name: Install Subversion
               shell: bash
               run: |
-                sudo apt-get update
-                sudo apt-get install --yes --no-install-recommends subversion
-                svn --version --quiet
+                  sudo apt-get update
+                  sudo apt-get install --yes --no-install-recommends subversion
+                  svn --version --quiet
             - name: Deploy verified immutable release to protected SVN
               shell: bash
               run: |
