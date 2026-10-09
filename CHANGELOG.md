@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.4](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/compare/v2.3.3...v2.3.4) (2026-10-09)
+
+
+### Bug Fixes
+
+* synchronize admin shell notice spacing and align Node tooling ([#44](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/issues/44)) ([abc6a85](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/commit/abc6a8509588d5e31835a5997262e6a8f4325df6))
+
 ## [2.3.3](https://github.com/RocketsAreNostalgic/ran-emailoctopus-jetpack-forms/compare/v2.3.2...v2.3.3) (2026-09-23)
 
 
