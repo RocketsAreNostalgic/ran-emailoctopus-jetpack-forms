@@ -136,7 +136,7 @@ RAN EmailOctopus for Jetpack Forms is licensed under
 
 ## WordPress frontend baseline
 
-Frontend tooling pins the shared candidate `3633371011f05dcea8bf8e13e2ca3005cb4e1d8f`,
+Frontend tooling pins the shared candidate `c7ca14dfadb6584ff3baa1884579f59b2b85c757`,
 qualified in Starter, with WordPress Stylelint config 26.1.0, Stylelint 17.14.1
 and Stylelint-SCSS 7.2.0. The [owner-approved upstream baseline](https://github.com/RocketsAreNostalgic/.github/issues/65#issuecomment-6077430975)
 accepts upstream SCSS selector-check limitations and omits additional RAN
@@ -148,3 +148,8 @@ Package-JSON linting calls npm-package-json-lint 6.4.0 with the same WordPress
 5.50.0 configuration and default ignores previously supplied by WordPress Scripts.
 No build command used that package here; direct use removes its unrelated build
 and lint dependency graph without changing the package-JSON validation baseline.
+
+Development tooling uses Node 24.21.0 (supported range `>=24.21.0 <25`).
+The Composer lock pins Admin Shell `24d05d834ab73302dab29aa2671b8e1f7285af40`;
+its generated CSS and provenance are synchronized from that immutable source.
+The PHP resource is unchanged. UI/manual/release holds remain in force.
