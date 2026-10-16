@@ -264,19 +264,26 @@ jobs:
                   unzip -tqq "$archive"
 
             - name: Install WordPress test suite
-              run: bash scripts/install-wp-tests.sh wordpress_test root root 127.0.0.1 ${{ matrix.wordpress }}
+              id: wordpress
+              shell: bash
+              run: |
+                  set -euo pipefail
+                  bash scripts/install-wp-tests.sh wordpress_test root root 127.0.0.1 ${{ matrix.wordpress }}
+                  resolved_version="$(wp core version --path=/tmp/wordpress)"
+                  [[ "$resolved_version" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]
+                  printf 'version=%s\n' "$resolved_version" >> "$GITHUB_OUTPUT"
+                  php --version
+                  wp --version
+                  printf 'Resolved WordPress fixture: %s\n' "$resolved_version"
 
             - run: WP_TESTS_DIR=/tmp/wordpress-tests-lib composer test:integration
 
             - name: Install and activate the shared release ZIP in fresh WordPress
               run: |
                   fresh_root=/tmp/ran-emailoctopus-jetpack-forms-release-wordpress
-                  wp_version='${{ matrix.wordpress }}'
-                  if [[ "$wp_version" == latest ]]; then
-                      wp core download --path="$fresh_root"
-                  else
-                      wp core download --path="$fresh_root" --version="$wp_version"
-                  fi
+                  wp_version='${{ steps.wordpress.outputs.version }}'
+                  wp core download --path="$fresh_root" --version="$wp_version"
+                  test "$(wp core version --path="$fresh_root")" = "$wp_version"
                   wp config create --path="$fresh_root" --dbname=ran_emailoctopus_jetpack_forms_release --dbuser=root --dbpass=root --dbhost=127.0.0.1:3306 --skip-check
                   wp db create --path="$fresh_root"
                   wp core install --path="$fresh_root" --url=http://localhost --title='RAN release test' --admin_user=admin --admin_password=release-test-password --admin_email=admin@example.test
@@ -295,7 +302,7 @@ jobs:
         needs: quality
         runs-on: ubuntu-24.04
         env:
-            PLUGIN_CHECK_CORE_REF: WordPress/WordPress#7.0.3
+            PLUGIN_CHECK_CORE_REF: WordPress/WordPress#7.1.3
             PLUGIN_CHECK_SLUG: ran-emailoctopus-jetpack-forms
             PLUGIN_CHECK_WP_ENV_VERSION: 11.13.0
         steps:
@@ -337,7 +344,7 @@ jobs:
                   npm --global --no-fund --no-audit install "@wordpress/env@${PLUGIN_CHECK_WP_ENV_VERSION}"
                   test "$(npm --global list @wordpress/env --depth=0 --json | jq -er '.dependencies["@wordpress/env"].version')" = "$PLUGIN_CHECK_WP_ENV_VERSION"
 
-            - name: Configure WordPress 7.0.3 for Plugin Check
+            - name: Configure WordPress 7.1.3 for Plugin Check
               env:
                   PLUGIN_DIR: ${{ github.workspace }}/plugin-check-build/ran-emailoctopus-jetpack-forms
               run: |
@@ -361,6 +368,9 @@ jobs:
                       fi
                       wp-env destroy --force || true
                   done
+
+            - name: Read back the pinned Plugin Check WordPress version
+              run: wp-env run cli wp eval 'if ( "7.1.3" !== get_bloginfo( "version" ) ) { WP_CLI::error( "Unexpected Plugin Check WordPress version." ); } echo get_bloginfo( "version" );'
 
             - name: Run Plugin Check
               id: plugin-check

@@ -14,10 +14,8 @@ WP_CORE_DIR="${WP_CORE_DIR:-/tmp/wordpress}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [[ "${WP_VERSION}" == "latest" ]]; then
-	WP_TESTS_REF="trunk"
 	WP_ARCHIVE="https://wordpress.org/latest.tar.gz"
 else
-	WP_TESTS_REF="tags/${WP_VERSION}"
 	WP_ARCHIVE="https://wordpress.org/wordpress-${WP_VERSION}.tar.gz"
 fi
 
@@ -26,21 +24,29 @@ if [[ ! -d "${WP_CORE_DIR}" ]]; then
 	curl --fail --location --silent --show-error "${WP_ARCHIVE}" | tar xz --strip-components=1 -C "${WP_CORE_DIR}"
 fi
 
+# Resolve stable core once, then select its matching released PHPUnit library.
+WP_RESOLVED_VERSION="$(php -r 'require $argv[1]; echo $wp_version;' "${WP_CORE_DIR}/wp-includes/version.php")"
+if [[ ! "$WP_RESOLVED_VERSION" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+	echo 'The WordPress fixture must resolve to an exact stable release.' >&2
+	exit 1
+fi
+if [[ "$WP_VERSION" != latest && "$WP_RESOLVED_VERSION" != "$WP_VERSION" ]]; then
+	echo 'The installed WordPress core does not match the requested fixture.' >&2
+	exit 1
+fi
+WP_TESTS_REF="tags/${WP_RESOLVED_VERSION}"
+
 if [[ ! -d "${WP_TESTS_DIR}" ]]; then
 	if command -v svn >/dev/null 2>&1; then
 		svn export --quiet "https://develop.svn.wordpress.org/${WP_TESTS_REF}/tests/phpunit" "${WP_TESTS_DIR}"
 	else
-		if [[ "${WP_VERSION}" == "latest" ]]; then
-			DEVELOP_ARCHIVE="https://github.com/WordPress/wordpress-develop/archive/refs/heads/trunk.zip"
-		else
-			DEVELOP_TAG="${WP_VERSION}"
+		DEVELOP_TAG="${WP_RESOLVED_VERSION}"
 
-			if [[ "${DEVELOP_TAG}" =~ ^[0-9]+\.[0-9]+$ ]]; then
-				DEVELOP_TAG="${DEVELOP_TAG}.0"
-			fi
-
-			DEVELOP_ARCHIVE="https://github.com/WordPress/wordpress-develop/archive/refs/tags/${DEVELOP_TAG}.zip"
+		if [[ "${DEVELOP_TAG}" =~ ^[0-9]+\.[0-9]+$ ]]; then
+			DEVELOP_TAG="${DEVELOP_TAG}.0"
 		fi
+
+		DEVELOP_ARCHIVE="https://github.com/WordPress/wordpress-develop/archive/refs/tags/${DEVELOP_TAG}.zip"
 
 		TEMP_DIR="$(mktemp -d)"
 		trap 'rm -rf "${TEMP_DIR}"' EXIT
@@ -81,4 +87,4 @@ fi
 
 mysql "${MYSQL_ARGS[@]}" --execute="CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`;"
 
-printf 'Installed WordPress %s test library at %s.\n' "${WP_VERSION}" "${WP_TESTS_DIR}"
+printf 'Installed WordPress %s test library at %s.\n' "${WP_RESOLVED_VERSION}" "${WP_TESTS_DIR}"
