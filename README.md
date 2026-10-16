@@ -123,6 +123,14 @@ WP_TESTS_DIR=/path/to/wordpress-tests-lib composer test:integration
 pnpm release:verify
 ```
 
+CI retains WordPress 6.8 / PHP 8.0 / Jetpack 15.5 and current stable WordPress /
+PHP 8.5 / current Jetpack endpoints. The installer resolves the downloaded stable
+WordPress version and selects that release's PHPUnit library. The fresh canonical
+ZIP installation reuses the resolved WordPress version. Plugin Check separately
+uses WordPress 7.1.3 from its available Git mirror tag. Existing source/tooling
+jobs and the single canonical archive build remain unchanged; endpoint checks do
+not establish every intermediate PHP version or replace browser/manual acceptance.
+
 See [AGENTS.md](AGENTS.md) for the complete contributor workflow and
 [RELEASE.md](RELEASE.md) for release management.
 
